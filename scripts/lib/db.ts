@@ -24,6 +24,7 @@ export async function connect(): Promise<Client> {
   }
 
   const regions = [
+    "ap-northeast-2",
     "ap-southeast-1",
     "ap-southeast-2",
     "us-east-1",

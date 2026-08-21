@@ -66,7 +66,7 @@ export default async function CafePage({ params }: Props) {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <Link
         href="/"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-bark hover:text-caramel-dark"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-bark hover:text-brand-dark"
       >
         <ArrowLeft className="size-4" strokeWidth={2} />
         All cafes
@@ -80,7 +80,7 @@ export default async function CafePage({ params }: Props) {
                 {cafe.name}
               </h1>
               <p className="mt-2 flex items-start gap-1.5 text-sm text-bark/80">
-                <MapPin className="mt-0.5 size-4 shrink-0 text-caramel-dark" strokeWidth={1.75} />
+                <MapPin className="mt-0.5 size-4 shrink-0 text-brand-dark" strokeWidth={1.75} />
                 {formatAddress(cafe) || "Davao City"}
                 {cafe.postcode ? `, ${cafe.postcode}` : ""}
               </p>
@@ -101,7 +101,7 @@ export default async function CafePage({ params }: Props) {
           <dl className="mt-6 space-y-3 rounded-2xl border border-latte bg-paper p-5 text-sm">
             {cafe.opening_hours && (
               <div className="flex items-start gap-3">
-                <Clock className="mt-0.5 size-4 shrink-0 text-caramel-dark" strokeWidth={1.75} />
+                <Clock className="mt-0.5 size-4 shrink-0 text-brand-dark" strokeWidth={1.75} />
                 <div>
                   <dt className="sr-only">Opening hours</dt>
                   <dd className="font-medium text-espresso">{cafe.opening_hours}</dd>
@@ -110,11 +110,11 @@ export default async function CafePage({ params }: Props) {
             )}
             {cafe.phone && (
               <div className="flex items-start gap-3">
-                <Phone className="mt-0.5 size-4 shrink-0 text-caramel-dark" strokeWidth={1.75} />
+                <Phone className="mt-0.5 size-4 shrink-0 text-brand-dark" strokeWidth={1.75} />
                 <div>
                   <dt className="sr-only">Phone</dt>
                   <dd>
-                    <a href={`tel:${cafe.phone}`} className="text-bark hover:text-caramel-dark">
+                    <a href={`tel:${cafe.phone}`} className="text-bark hover:text-brand-dark">
                       {cafe.phone}
                     </a>
                   </dd>
@@ -122,7 +122,7 @@ export default async function CafePage({ params }: Props) {
               </div>
             )}
             <div className="flex items-start gap-3">
-                <Globe className="mt-0.5 size-4 shrink-0 text-caramel-dark" strokeWidth={1.75} />
+                <Globe className="mt-0.5 size-4 shrink-0 text-brand-dark" strokeWidth={1.75} />
                 <div>
                   <dt className="sr-only">Website</dt>
                   <dd>
@@ -131,7 +131,7 @@ export default async function CafePage({ params }: Props) {
                         href={cafe.website.startsWith("http") ? cafe.website : `https://${cafe.website}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-bark hover:text-caramel-dark"
+                        className="inline-flex items-center gap-1 text-bark hover:text-brand-dark"
                       >
                         Website
                         <ExternalLink className="size-3.5" strokeWidth={2} />
@@ -145,7 +145,7 @@ export default async function CafePage({ params }: Props) {
             {cafe.cuisine && (
               <div className="flex items-start gap-3">
                 <UtensilsCrossed
-                  className="mt-0.5 size-4 shrink-0 text-caramel-dark"
+                  className="mt-0.5 size-4 shrink-0 text-brand-dark"
                   strokeWidth={1.75}
                 />
                 <div>
@@ -221,7 +221,7 @@ export default async function CafePage({ params }: Props) {
                 href={`https://www.openstreetmap.org/?mlat=${cafe.lat}&mlon=${cafe.lng}#map=18/${cafe.lat}/${cafe.lng}`}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 font-medium hover:text-caramel-dark"
+                className="inline-flex items-center gap-1 font-medium hover:text-brand-dark"
               >
                 View larger map
                 <ExternalLink className="size-3" strokeWidth={2} />

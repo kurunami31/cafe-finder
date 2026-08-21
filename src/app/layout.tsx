@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import Link from "next/link";
-import { Coffee } from "lucide-react";
+import Image from "next/image";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -32,19 +32,21 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col font-sans">
         <header className="border-b border-latte bg-paper">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="flex size-9 items-center justify-center rounded-full bg-espresso text-cream">
-                <Coffee className="size-5" strokeWidth={1.75} />
-              </span>
-              <span className="font-display text-xl font-semibold tracking-tight text-espresso">
-                Cafe Finder
-                <span className="ml-2 hidden rounded-full bg-latte px-2 py-0.5 align-middle text-xs font-medium tracking-wide text-bark sm:inline">
-                  DAVAO CITY
-                </span>
-              </span>
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/logo.jpg"
+                alt="Cafe Finder — Discover Your Perfect Spot"
+                width={480}
+                height={160}
+                priority
+                className="h-12 w-auto rounded-xl"
+              />
             </Link>
-            <nav className="text-sm font-medium text-bark">
-              <Link href="/about" className="hover:text-caramel-dark">
+            <nav className="flex items-center gap-5 text-sm font-medium text-bark">
+              <Link href="/welcome" className="hover:text-brand-dark">
+                Welcome
+              </Link>
+              <Link href="/about" className="hover:text-brand-dark">
                 About
               </Link>
             </nav>
@@ -57,7 +59,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               Cafe listings &copy; OpenStreetMap contributors, available under the{" "}
               <a
                 href="https://www.openstreetmap.org/copyright"
-                className="underline hover:text-caramel-dark"
+                className="underline hover:text-brand-dark"
                 target="_blank"
                 rel="noreferrer"
               >

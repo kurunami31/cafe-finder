@@ -20,13 +20,19 @@ async function fetchCafes(): Promise<OverpassElement[]> {
   const endpoints = [
     "https://overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter",
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
   ];
   for (const url of endpoints) {
     try {
       console.log(`Fetching from ${new URL(url).host}...`);
       const res = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent": "CafeFinderDavao/1.0 (cafe directory app)",
+          Accept: "application/json",
+        },
         body: `data=${encodeURIComponent(QUERY)}`,
         signal: AbortSignal.timeout(240_000),
       });

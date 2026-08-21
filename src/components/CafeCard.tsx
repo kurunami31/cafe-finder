@@ -13,13 +13,13 @@ export function CafeCard({ cafe }: { cafe: CafeWithRating }) {
       className="group flex flex-col rounded-2xl border border-latte bg-paper p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-sand hover:shadow-md"
     >
       <div className="flex items-start justify-between gap-3">
-        <h3 className="font-display text-lg font-semibold leading-snug text-espresso group-hover:text-caramel-dark">
+        <h3 className="font-display text-lg font-semibold leading-snug text-espresso group-hover:text-brand-dark">
           {cafe.name}
         </h3>
         <OpenBadge open={open} />
       </div>
       <p className="mt-1.5 flex items-start gap-1.5 text-sm text-bark/80">
-        <MapPin className="mt-0.5 size-4 shrink-0 text-caramel-dark" strokeWidth={1.75} />
+        <MapPin className="mt-0.5 size-4 shrink-0 text-brand-dark" strokeWidth={1.75} />
         <span>{formatAddress(cafe) || cafe.barangay || "Davao City"}</span>
       </p>
       <div className="mt-3">

@@ -8,7 +8,7 @@ export function Stars({ value, className = "size-4" }: { value: number; classNam
       {Array.from({ length: 5 }).map((_, i) => {
         if (i < full) {
           return (
-            <Star key={i} className={`${className} fill-caramel text-caramel`} strokeWidth={1} />
+            <Star key={i} className={`${className} fill-brand text-brand`} strokeWidth={1} />
           );
         }
         if (i === full && half) {
@@ -16,7 +16,7 @@ export function Stars({ value, className = "size-4" }: { value: number; classNam
             <span key={i} className="relative inline-flex">
               <Star className={`${className} text-sand`} strokeWidth={1.5} />
               <StarHalf
-                className={`absolute inset-0 ${className} fill-caramel text-caramel`}
+                className={`absolute inset-0 ${className} fill-brand text-brand`}
                 strokeWidth={1}
               />
             </span>

@@ -8,7 +8,7 @@ import "leaflet/dist/leaflet.css";
 function CafeIcon() {
   return L.divIcon({
     className: "",
-    html: `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#faf6f0" stroke-width="1.5"><circle cx="12" cy="12" r="11" fill="#2e2015"/><path d="M17 8h1a2 2 0 0 1 0 4h-1" stroke="#a9713f"/><path d="M3 8h14v6a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" stroke="#faf6f0"/></svg>`,
+    html: `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#faf7f1" stroke-width="1.5"><path d="M12 21c4-4.5 7-8 7-11a7 7 0 1 0-14 0c0 3 3 6.5 7 11Z" fill="#1ba7ae" stroke="#12858c"/><path d="M15.5 9.5h1a1.75 1.75 0 0 1 0 3.5h-1" stroke="#fff"/><path d="M5.5 9.5h10v3.25a3 3 0 0 1-3 3h-4a3 3 0 0 1-3-3Z" stroke="#fff"/></svg>`,
     iconSize: [36, 36],
     iconAnchor: [18, 34],
     popupAnchor: [0, -30],

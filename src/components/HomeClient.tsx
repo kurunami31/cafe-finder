@@ -1,10 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Search, Wifi, Sun, Snowflake } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  Wifi,
+  Sun,
+  Snowflake,
+} from "lucide-react";
 import type { CafeWithRating } from "@/lib/types";
 import { isOpenNow } from "@/lib/hours";
 import { CafeCard } from "@/components/CafeCard";
+
+const PAGE_SIZE = 12;
 
 type Filter = "open" | "wifi" | "outdoor" | "aircon";
 
@@ -18,6 +27,8 @@ const FILTERS: { key: Filter; label: string; test: (c: CafeWithRating) => boolea
 export function HomeClient({ cafes }: { cafes: CafeWithRating[] }) {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState<Set<Filter>>(new Set());
+  const [page, setPage] = useState(1);
+  const topRef = useRef<HTMLDivElement>(null);
 
   const toggle = (f: Filter) => {
     setActive((prev) => {
@@ -26,6 +37,7 @@ export function HomeClient({ cafes }: { cafes: CafeWithRating[] }) {
       else next.add(f);
       return next;
     });
+    setPage(1);
   };
 
   const filtered = useMemo(() => {
@@ -47,11 +59,30 @@ export function HomeClient({ cafes }: { cafes: CafeWithRating[] }) {
     });
   }, [cafes, query, active]);
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pageItems = filtered.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
+
+  const goToPage = (p: number) => {
+    setPage(p);
+    topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const pages = useMemo(() => {
+    const list: number[] = [];
+    const start = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
+    for (let i = start; i <= Math.min(totalPages, start + 4); i++) list.push(i);
+    return list;
+  }, [currentPage, totalPages]);
+
   return (
-    <div>
-      <div className="sticky top-0 z-10 -mx-4 border-b border-latte bg-cream/95 px-4 pb-4 pt-4 backdrop-blur">
+    <div ref={topRef} className="scroll-mt-20">
+      <div className="sticky top-0 z-10 border-b border-latte bg-cream/90 px-4 py-4 backdrop-blur">
         <div className="mx-auto max-w-6xl">
-          <label className="relative block">
+          <label className="relative block max-w-2xl">
             <Search
               className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-bark/50"
               strokeWidth={1.75}
@@ -59,9 +90,12 @@ export function HomeClient({ cafes }: { cafes: CafeWithRating[] }) {
             <input
               type="search"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setPage(1);
+              }}
               placeholder="Search cafes by name or area..."
-              className="w-full rounded-full border border-sand bg-paper py-3 pl-12 pr-4 text-sm text-espresso placeholder:text-bark/40 focus:border-caramel focus:outline-none focus:ring-2 focus:ring-caramel/25"
+              className="w-full rounded-full border border-sand bg-paper py-3 pl-12 pr-4 text-sm text-espresso shadow-sm transition placeholder:text-bark/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/25"
             />
           </label>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -71,10 +105,10 @@ export function HomeClient({ cafes }: { cafes: CafeWithRating[] }) {
                 type="button"
                 onClick={() => toggle(key)}
                 aria-pressed={active.has(key)}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 hover:-translate-y-px ${
                   active.has(key)
-                    ? "border-espresso bg-espresso text-cream"
-                    : "border-sand bg-paper text-bark hover:border-caramel"
+                    ? "border-brand bg-brand text-white shadow-sm shadow-brand/30"
+                    : "border-sand bg-paper text-bark hover:border-brand"
                 }`}
               >
                 {key === "wifi" && <Wifi className="size-3.5" strokeWidth={2} />}
@@ -88,26 +122,103 @@ export function HomeClient({ cafes }: { cafes: CafeWithRating[] }) {
       </div>
 
       <div className="mx-auto max-w-6xl px-4 py-8">
-        <p className="mb-4 text-sm text-bark/60">
-          {filtered.length === cafes.length
-            ? `${cafes.length} cafes in Davao City`
-            : `${filtered.length} of ${cafes.length} cafes`}
+        <p className="mb-5 text-sm text-bark/60">
+          Showing{" "}
+          <span className="font-semibold text-bark">
+            {pageItems.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1}–
+            {(currentPage - 1) * PAGE_SIZE + pageItems.length}
+          </span>{" "}
+          of <span className="font-semibold text-bark">{filtered.length}</span> cafes
         </p>
-        {filtered.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-sand bg-paper p-12 text-center">
-            <p className="font-display text-lg font-semibold text-espresso">No cafes found</p>
+
+        {pageItems.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-sand bg-paper p-12 text-center animate-fade-in">
+            <Search className="mx-auto size-8 text-sand" strokeWidth={1.5} />
+            <p className="mt-4 font-display text-lg font-semibold text-espresso">
+              No cafes found
+            </p>
             <p className="mt-1 text-sm text-bark/60">
               Try a different search term or remove some filters.
             </p>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((cafe) => (
-              <CafeCard key={cafe.id} cafe={cafe} />
+          <div
+            key={`${currentPage}-${query}-${[...active].join(",")}`}
+            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {pageItems.map((cafe, i) => (
+              <div
+                key={cafe.id}
+                className="animate-rise"
+                style={{ animationDelay: `${Math.min(i * 55, 500)}ms` }}
+              >
+                <CafeCard cafe={cafe} />
+              </div>
             ))}
           </div>
         )}
+
+        {totalPages > 1 && (
+          <nav
+            aria-label="Pagination"
+            className="mt-10 flex items-center justify-center gap-1.5"
+          >
+            <PageButton
+              onClick={() => goToPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              label="Previous page"
+            >
+              <ChevronLeft className="size-4" strokeWidth={2} />
+            </PageButton>
+            {pages.map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => goToPage(p)}
+                aria-current={p === currentPage ? "page" : undefined}
+                className={`size-9 rounded-full text-sm font-semibold transition-all duration-200 hover:-translate-y-px ${
+                  p === currentPage
+                    ? "bg-espresso text-cream shadow-md"
+                    : "border border-sand bg-paper text-bark hover:border-brand"
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+            <PageButton
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              label="Next page"
+            >
+              <ChevronRight className="size-4" strokeWidth={2} />
+            </PageButton>
+          </nav>
+        )}
       </div>
     </div>
+  );
+}
+
+function PageButton({
+  onClick,
+  disabled,
+  label,
+  children,
+}: {
+  onClick: () => void;
+  disabled: boolean;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      className="flex size-9 items-center justify-center rounded-full border border-sand bg-paper text-bark transition-all duration-200 hover:-translate-y-px hover:border-brand disabled:pointer-events-none disabled:opacity-35"
+    >
+      {children}
+    </button>
   );
 }

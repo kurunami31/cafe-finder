@@ -28,7 +28,7 @@ export function AmenityBadges({
           className="inline-flex items-center gap-1.5 text-xs font-medium text-bark"
           title={label}
         >
-          <Icon className="size-4 text-caramel-dark" strokeWidth={1.75} />
+          <Icon className="size-4 text-brand-dark" strokeWidth={1.75} />
           {label}
         </span>
       ))}
@@ -52,7 +52,7 @@ export function AmenityStatus({
       }`}
     >
       {ok ? (
-        <Icon className="size-4 text-caramel-dark" strokeWidth={1.75} />
+        <Icon className="size-4 text-brand-dark" strokeWidth={1.75} />
       ) : (
         <Ban className="size-4" strokeWidth={1.75} />
       )}

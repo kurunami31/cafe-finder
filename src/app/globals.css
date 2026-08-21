@@ -1,17 +1,48 @@
 @import "tailwindcss";
 
 @theme {
-  --color-cream: #faf6f0;
+  --color-cream: #faf7f1;
   --color-paper: #fffdf9;
-  --color-latte: #ece3d6;
-  --color-sand: #d9cbb8;
-  --color-bark: #4a3426;
-  --color-espresso: #2e2015;
-  --color-caramel: #a9713f;
-  --color-caramel-dark: #8a5a30;
+  --color-latte: #e9e2d4;
+  --color-sand: #d6cbb8;
+  --color-bark: #5a4632;
+  --color-espresso: #33261a;
+  --color-brand: #1ba7ae;
+  --color-brand-dark: #12858c;
   --color-leaf: #5b7553;
   --font-display: var(--font-fraunces), Georgia, serif;
   --font-sans: var(--font-inter), system-ui, sans-serif;
+
+  --animate-rise: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-in: fade-in 0.7s ease-out both;
+  --animate-hero: hero-zoom 12s ease-out both;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes hero-zoom {
+    from {
+      transform: scale(1.08);
+    }
+    to {
+      transform: scale(1);
+    }
+  }
 }
 
 body {
@@ -21,4 +52,14 @@ body {
 
 .leaflet-container {
   font-family: var(--font-sans);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

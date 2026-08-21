@@ -15,14 +15,14 @@ export default function AboutPage() {
 
       <ul className="mt-8 space-y-5">
         <li className="flex gap-4 rounded-2xl border border-latte bg-paper p-5">
-          <Database className="mt-0.5 size-6 shrink-0 text-caramel-dark" strokeWidth={1.5} />
+          <Database className="mt-0.5 size-6 shrink-0 text-brand-dark" strokeWidth={1.5} />
           <div>
             <h2 className="font-semibold text-espresso">Where the listings come from</h2>
             <p className="mt-1 text-sm leading-relaxed text-bark/80">
               Cafe locations and details are sourced from{" "}
               <a
                 href="https://www.openstreetmap.org"
-                className="underline hover:text-caramel-dark"
+                className="underline hover:text-brand-dark"
                 target="_blank"
                 rel="noreferrer"
               >
@@ -33,7 +33,7 @@ export default function AboutPage() {
           </div>
         </li>
         <li className="flex gap-4 rounded-2xl border border-latte bg-paper p-5">
-          <MapIcon className="mt-0.5 size-6 shrink-0 text-caramel-dark" strokeWidth={1.5} />
+          <MapIcon className="mt-0.5 size-6 shrink-0 text-brand-dark" strokeWidth={1.5} />
           <div>
             <h2 className="font-semibold text-espresso">Maps</h2>
             <p className="mt-1 text-sm leading-relaxed text-bark/80">
@@ -41,7 +41,7 @@ export default function AboutPage() {
               available under the{" "}
               <a
                 href="https://www.openstreetmap.org/copyright"
-                className="underline hover:text-caramel-dark"
+                className="underline hover:text-brand-dark"
                 target="_blank"
                 rel="noreferrer"
               >
@@ -52,7 +52,7 @@ export default function AboutPage() {
           </div>
         </li>
         <li className="flex gap-4 rounded-2xl border border-latte bg-paper p-5">
-          <Coffee className="mt-0.5 size-6 shrink-0 text-caramel-dark" strokeWidth={1.5} />
+          <Coffee className="mt-0.5 size-6 shrink-0 text-brand-dark" strokeWidth={1.5} />
           <div>
             <h2 className="font-semibold text-espresso">Reviews</h2>
             <p className="mt-1 text-sm leading-relaxed text-bark/80">

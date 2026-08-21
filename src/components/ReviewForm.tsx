@@ -41,8 +41,8 @@ export function ReviewForm({ cafeId }: { cafeId: string }) {
               <Star
                 className={`size-7 transition ${
                   n <= (hover || rating)
-                    ? "fill-caramel text-caramel"
-                    : "text-sand hover:text-caramel/60"
+                    ? "fill-brand text-brand"
+                    : "text-sand hover:text-brand/60"
                 }`}
                 strokeWidth={1.5}
               />
@@ -61,7 +61,7 @@ export function ReviewForm({ cafeId }: { cafeId: string }) {
           type="text"
           maxLength={40}
           placeholder="Anonymous"
-          className="w-full rounded-xl border border-sand bg-paper px-3.5 py-2.5 text-sm text-espresso placeholder:text-bark/40 focus:border-caramel focus:outline-none focus:ring-2 focus:ring-caramel/25"
+          className="w-full rounded-xl border border-sand bg-paper px-3.5 py-2.5 text-sm text-espresso placeholder:text-bark/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/25"
         />
       </div>
 
@@ -77,7 +77,7 @@ export function ReviewForm({ cafeId }: { cafeId: string }) {
           maxLength={1000}
           rows={4}
           placeholder="How was the coffee, the atmosphere, the service?"
-          className="w-full resize-y rounded-xl border border-sand bg-paper px-3.5 py-2.5 text-sm text-espresso placeholder:text-bark/40 focus:border-caramel focus:outline-none focus:ring-2 focus:ring-caramel/25"
+          className="w-full resize-y rounded-xl border border-sand bg-paper px-3.5 py-2.5 text-sm text-espresso placeholder:text-bark/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/25"
         />
       </div>
 

@@ -4,6 +4,7 @@ import type { CafeWithRating } from "@/lib/types";
 import { isOpenNow, formatAddress } from "@/lib/hours";
 import { RatingSummary } from "@/components/Stars";
 import { AmenityBadges } from "@/components/AmenityBadges";
+import { FavoriteButton } from "@/components/FavoriteButton";
 
 export function CafeCard({ cafe }: { cafe: CafeWithRating }) {
   const open = isOpenNow(cafe.opening_hours);
@@ -16,7 +17,10 @@ export function CafeCard({ cafe }: { cafe: CafeWithRating }) {
         <h3 className="font-display text-lg font-semibold leading-snug text-espresso group-hover:text-brand-dark">
           {cafe.name}
         </h3>
-        <OpenBadge open={open} />
+        <div className="flex shrink-0 items-center gap-1">
+          <FavoriteButton cafeId={cafe.id} />
+          <OpenBadge open={open} />
+        </div>
       </div>
       <p className="mt-1.5 flex items-start gap-1.5 text-sm text-bark/80">
         <MapPin className="mt-0.5 size-4 shrink-0 text-brand-dark" strokeWidth={1.75} />

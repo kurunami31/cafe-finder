@@ -1,15 +1,41 @@
 @import "tailwindcss";
 
-@theme {
-  --color-cream: #faf7f1;
-  --color-paper: #fffdf9;
-  --color-latte: #e9e2d4;
-  --color-sand: #d6cbb8;
-  --color-bark: #5a4632;
-  --color-espresso: #33261a;
-  --color-brand: #1ba7ae;
-  --color-brand-dark: #12858c;
-  --color-leaf: #5b7553;
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg: #faf7f1;
+  --surface: #fffdf9;
+  --border: #e9e2d4;
+  --border-strong: #d6cbb8;
+  --text-muted: #5a4632;
+  --text: #33261a;
+  --brand: #1ba7ae;
+  --brand-dark: #12858c;
+  --success: #5b7553;
+}
+
+.dark {
+  --bg: #16110d;
+  --surface: #211a13;
+  --border: #362c20;
+  --border-strong: #4a3d2d;
+  --text-muted: #b3a28a;
+  --text: #f0e9dd;
+  --brand: #2cc5cd;
+  --brand-dark: #1ba7ae;
+  --success: #8fae85;
+}
+
+@theme inline {
+  --color-cream: var(--bg);
+  --color-paper: var(--surface);
+  --color-latte: var(--border);
+  --color-sand: var(--border-strong);
+  --color-bark: var(--text-muted);
+  --color-espresso: var(--text);
+  --color-brand: var(--brand);
+  --color-brand-dark: var(--brand-dark);
+  --color-leaf: var(--success);
   --font-display: var(--font-fraunces), Georgia, serif;
   --font-sans: var(--font-inter), system-ui, sans-serif;
 
@@ -46,12 +72,22 @@
 }
 
 body {
-  background-color: var(--color-cream);
-  color: var(--color-espresso);
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 .leaflet-container {
   font-family: var(--font-sans);
+}
+.leaflet-tile {
+  filter: none;
+}
+.dark .leaflet-tile {
+  filter: brightness(0.75) saturate(0.85);
+}
+.dark .map-fallback {
+  background-color: #211a13;
 }
 
 @media (prefers-reduced-motion: reduce) {

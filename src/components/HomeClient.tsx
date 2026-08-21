@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import {
+  ArrowDownWideNarrow,
   ChevronLeft,
   ChevronRight,
   Search,
@@ -16,6 +17,7 @@ import { CafeCard } from "@/components/CafeCard";
 const PAGE_SIZE = 12;
 
 type Filter = "open" | "wifi" | "outdoor" | "aircon";
+type SortKey = "name" | "rating" | "reviews";
 
 const FILTERS: { key: Filter; label: string; test: (c: CafeWithRating) => boolean | null }[] = [
   { key: "open", label: "Open now", test: (c) => isOpenNow(c.opening_hours) },
@@ -24,9 +26,24 @@ const FILTERS: { key: Filter; label: string; test: (c: CafeWithRating) => boolea
   { key: "aircon", label: "Air-conditioned", test: (c) => c.aircon },
 ];
 
+const SORTS: { key: SortKey; label: string; compare: (a: CafeWithRating, b: CafeWithRating) => number }[] = [
+  { key: "name", label: "Name A–Z", compare: (a, b) => a.name.localeCompare(b.name) },
+  {
+    key: "rating",
+    label: "Top rated",
+    compare: (a, b) => (b.rating_avg ?? 0) - (a.rating_avg ?? 0),
+  },
+  {
+    key: "reviews",
+    label: "Most reviewed",
+    compare: (a, b) => b.review_count - a.review_count,
+  },
+];
+
 export function HomeClient({ cafes }: { cafes: CafeWithRating[] }) {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState<Set<Filter>>(new Set());
+  const [sort, setSort] = useState<SortKey>("name");
   const [page, setPage] = useState(1);
   const topRef = useRef<HTMLDivElement>(null);
 
@@ -59,9 +76,14 @@ export function HomeClient({ cafes }: { cafes: CafeWithRating[] }) {
     });
   }, [cafes, query, active]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const sorted = useMemo(() => {
+    const comparator = SORTS.find((s) => s.key === sort)!.compare;
+    return [...filtered].sort(comparator);
+  }, [filtered, sort]);
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
-  const pageItems = filtered.slice(
+  const pageItems = sorted.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE
   );
@@ -117,6 +139,24 @@ export function HomeClient({ cafes }: { cafes: CafeWithRating[] }) {
                 {label}
               </button>
             ))}
+            <label className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-sand bg-paper px-3 py-1.5 text-xs font-semibold text-bark">
+              <ArrowDownWideNarrow className="size-3.5 text-brand-dark" strokeWidth={2} />
+              <select
+                value={sort}
+                onChange={(e) => {
+                  setSort(e.target.value as SortKey);
+                  setPage(1);
+                }}
+                aria-label="Sort cafes"
+                className="cursor-pointer bg-transparent pr-1 focus:outline-none"
+              >
+                {SORTS.map((s) => (
+                  <option key={s.key} value={s.key}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
         </div>
       </div>
@@ -143,7 +183,7 @@ export function HomeClient({ cafes }: { cafes: CafeWithRating[] }) {
           </div>
         ) : (
           <div
-            key={`${currentPage}-${query}-${[...active].join(",")}`}
+            key={`${currentPage}-${query}-${sort}-${[...active].join(",")}`}
             className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
           >
             {pageItems.map((cafe, i) => (

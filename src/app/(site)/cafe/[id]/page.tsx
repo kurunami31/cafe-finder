@@ -19,6 +19,7 @@ import MapClientWrapper from "@/components/Map";
 import { Stars } from "@/components/Stars";
 import { AmenityStatus } from "@/components/AmenityBadges";
 import { ReviewForm } from "@/components/ReviewForm";
+import { FavoriteButton } from "@/components/FavoriteButton";
 
 export const dynamic = "force-dynamic";
 
@@ -75,15 +76,21 @@ export default async function CafePage({ params }: Props) {
       <div className="mt-5 grid gap-8 lg:grid-cols-[1fr_380px]">
         <div>
           <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <h1 className="font-display text-3xl font-semibold tracking-tight text-espresso sm:text-4xl">
-                {cafe.name}
-              </h1>
-              <p className="mt-2 flex items-start gap-1.5 text-sm text-bark/80">
-                <MapPin className="mt-0.5 size-4 shrink-0 text-brand-dark" strokeWidth={1.75} />
-                {formatAddress(cafe) || "Davao City"}
-                {cafe.postcode ? `, ${cafe.postcode}` : ""}
-              </p>
+            <div className="flex items-start gap-3">
+              <FavoriteButton cafeId={cafe.id} size="lg" />
+              <div>
+                <h1 className="font-display text-3xl font-semibold tracking-tight text-espresso sm:text-4xl">
+                  {cafe.name}
+                </h1>
+                <p className="mt-2 flex items-start gap-1.5 text-sm text-bark/80">
+                  <MapPin
+                    className="mt-0.5 size-4 shrink-0 text-brand-dark"
+                    strokeWidth={1.75}
+                  />
+                  {formatAddress(cafe) || "Davao City"}
+                  {cafe.postcode ? `, ${cafe.postcode}` : ""}
+                </p>
+              </div>
             </div>
             <OpenStatus hours={cafe.opening_hours} />
           </div>

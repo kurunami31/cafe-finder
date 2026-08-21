@@ -54,7 +54,7 @@ export function FavoritesClient({ allCafes }: { allCafes: CafeWithRating[] }) {
           {favorites.map((cafe, i) => (
             <div
               key={cafe.id}
-              className="animate-rise"
+              className="h-full animate-rise"
               style={{ animationDelay: `${Math.min(i * 55, 500)}ms` }}
             >
               <CafeCard cafe={cafe} />

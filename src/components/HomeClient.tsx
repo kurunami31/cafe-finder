@@ -29,16 +29,26 @@ const FILTERS: { key: Filter; label: string; test: (c: CafeWithRating) => boolea
 ];
 
 const SORTS: { key: SortKey; label: string; compare: (a: CafeWithRating, b: CafeWithRating) => number }[] = [
-  { key: "name", label: "Name A–Z", compare: (a, b) => a.name.localeCompare(b.name) },
+  {
+    key: "name",
+    label: "Name A–Z",
+    compare: (a, b) => a.name.localeCompare(b.name),
+  },
   {
     key: "rating",
     label: "Top rated",
-    compare: (a, b) => (b.rating_avg ?? 0) - (a.rating_avg ?? 0),
+    compare: (a, b) =>
+      (b.rating_avg ?? 0) - (a.rating_avg ?? 0) ||
+      b.review_count - a.review_count ||
+      a.name.localeCompare(b.name),
   },
   {
     key: "reviews",
     label: "Most reviewed",
-    compare: (a, b) => b.review_count - a.review_count,
+    compare: (a, b) =>
+      b.review_count - a.review_count ||
+      (b.rating_avg ?? 0) - (a.rating_avg ?? 0) ||
+      a.name.localeCompare(b.name),
   },
 ];
 
@@ -122,14 +132,14 @@ export function HomeClient({ cafes }: { cafes: CafeWithRating[] }) {
               className="w-full rounded-full border border-sand bg-paper py-3 pl-12 pr-4 text-sm text-espresso shadow-sm transition placeholder:text-bark/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/25"
             />
           </label>
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             {FILTERS.map(({ key, label }) => (
               <button
                 key={key}
                 type="button"
                 onClick={() => toggle(key)}
                 aria-pressed={active.has(key)}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 hover:-translate-y-px ${
+                className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3.5 text-xs font-semibold transition-all duration-200 hover:-translate-y-px ${
                   active.has(key)
                     ? "border-brand bg-brand text-white shadow-sm shadow-brand/30"
                     : "border-sand bg-paper text-bark hover:border-brand"
@@ -180,7 +190,7 @@ export function HomeClient({ cafes }: { cafes: CafeWithRating[] }) {
             {pageItems.map((cafe, i) => (
               <div
                 key={cafe.id}
-                className="animate-rise"
+                className="h-full animate-rise"
                 style={{ animationDelay: `${Math.min(i * 55, 500)}ms` }}
               >
                 <CafeCard cafe={cafe} />
@@ -292,7 +302,7 @@ function SortDropdown({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label="Sort cafes"
-        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-200 hover:-translate-y-px ${
+        className={`inline-flex h-8 w-full items-center justify-between gap-1.5 rounded-full border px-3.5 text-xs font-semibold transition-all duration-200 hover:-translate-y-px sm:w-auto ${
           open
             ? "border-brand bg-brand/10 text-brand-dark"
             : "border-sand bg-paper text-bark hover:border-brand"
@@ -311,7 +321,7 @@ function SortDropdown({
         <ul
           role="listbox"
           aria-label="Sort options"
-          className="absolute right-0 z-20 mt-2 w-44 animate-rise overflow-hidden rounded-[1.4rem] border border-latte bg-paper p-1 shadow-lg shadow-espresso/10"
+          className="absolute right-0 top-full z-20 mt-2 w-full min-w-44 animate-rise overflow-hidden rounded-[1.4rem] border border-latte bg-paper p-1 shadow-lg shadow-espresso/10 sm:w-auto"
         >
           {SORTS.map((s) => {
             const selected = s.key === value;
@@ -323,13 +333,13 @@ function SortDropdown({
                     onChange(s.key);
                     setOpen(false);
                   }}
-                  className={`flex w-full items-center justify-between gap-2 rounded-full px-3.5 py-2 text-xs font-semibold transition-colors ${
+                  className={`flex h-9 w-full items-center justify-between gap-2 whitespace-nowrap rounded-full px-3.5 text-xs font-semibold transition-colors ${
                     selected
                       ? "bg-brand/10 text-brand-dark"
                       : "text-bark hover:bg-latte hover:text-espresso"
                   }`}
                 >
-                  {s.label}
+                  <span className={selected ? "" : "pl-5"}>{s.label}</span>
                   {selected && <Check className="size-3.5 shrink-0" strokeWidth={2.5} />}
                 </button>
               </li>

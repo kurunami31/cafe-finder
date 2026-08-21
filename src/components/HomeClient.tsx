@@ -13,53 +13,37 @@ import {
   Snowflake,
 } from "lucide-react";
 import type { CafeWithRating } from "@/lib/types";
-import { isOpenNow } from "@/lib/hours";
+import {
+  filterAndSort,
+  hasAnyReviews,
+  SORT_LABELS,
+  type FilterKey,
+  type SortKey,
+} from "@/lib/browse";
 import { CafeCard } from "@/components/CafeCard";
 
 const PAGE_SIZE = 12;
 
-type Filter = "open" | "wifi" | "outdoor" | "aircon";
-type SortKey = "name" | "rating" | "reviews";
-
-const FILTERS: { key: Filter; label: string; test: (c: CafeWithRating) => boolean | null }[] = [
-  { key: "open", label: "Open now", test: (c) => isOpenNow(c.opening_hours) },
-  { key: "wifi", label: "Wi-Fi", test: (c) => c.wifi },
-  { key: "outdoor", label: "Outdoor seating", test: (c) => c.outdoor_seating },
-  { key: "aircon", label: "Air-conditioned", test: (c) => c.aircon },
+const FILTERS: { key: FilterKey; label: string }[] = [
+  { key: "open", label: "Open now" },
+  { key: "wifi", label: "Wi-Fi" },
+  { key: "outdoor", label: "Outdoor seating" },
+  { key: "aircon", label: "Air-conditioned" },
 ];
 
-const SORTS: { key: SortKey; label: string; compare: (a: CafeWithRating, b: CafeWithRating) => number }[] = [
-  {
-    key: "name",
-    label: "Name A–Z",
-    compare: (a, b) => a.name.localeCompare(b.name),
-  },
-  {
-    key: "rating",
-    label: "Top rated",
-    compare: (a, b) =>
-      (b.rating_avg ?? 0) - (a.rating_avg ?? 0) ||
-      b.review_count - a.review_count ||
-      a.name.localeCompare(b.name),
-  },
-  {
-    key: "reviews",
-    label: "Most reviewed",
-    compare: (a, b) =>
-      b.review_count - a.review_count ||
-      (b.rating_avg ?? 0) - (a.rating_avg ?? 0) ||
-      a.name.localeCompare(b.name),
-  },
-];
+const SORTS = Object.entries(SORT_LABELS).map(([key, label]) => ({
+  key: key as SortKey,
+  label,
+}));
 
 export function HomeClient({ cafes }: { cafes: CafeWithRating[] }) {
   const [query, setQuery] = useState("");
-  const [active, setActive] = useState<Set<Filter>>(new Set());
+  const [active, setActive] = useState<Set<FilterKey>>(new Set());
   const [sort, setSort] = useState<SortKey>("name");
   const [page, setPage] = useState(1);
   const topRef = useRef<HTMLDivElement>(null);
 
-  const toggle = (f: Filter) => {
+  const toggle = (f: FilterKey) => {
     setActive((prev) => {
       const next = new Set(prev);
       if (next.has(f)) next.delete(f);
@@ -69,29 +53,12 @@ export function HomeClient({ cafes }: { cafes: CafeWithRating[] }) {
     setPage(1);
   };
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return cafes.filter((c) => {
-      if (
-        q &&
-        !`${c.name} ${c.street ?? ""} ${c.barangay ?? ""} ${c.district ?? ""}`
-          .toLowerCase()
-          .includes(q)
-      ) {
-        return false;
-      }
-      for (const f of FILTERS) {
-        if (!active.has(f.key)) continue;
-        if (f.test(c) !== true) return false;
-      }
-      return true;
-    });
-  }, [cafes, query, active]);
+  const sorted = useMemo(
+    () => filterAndSort(cafes, query, active, sort),
+    [cafes, query, active, sort]
+  );
 
-  const sorted = useMemo(() => {
-    const comparator = SORTS.find((s) => s.key === sort)!.compare;
-    return [...filtered].sort(comparator);
-  }, [filtered, sort]);
+  const anyReviews = useMemo(() => hasAnyReviews(sorted), [sorted]);
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -163,14 +130,28 @@ export function HomeClient({ cafes }: { cafes: CafeWithRating[] }) {
       </div>
 
       <div className="mx-auto max-w-6xl px-4 py-8">
-        <p className="mb-5 text-sm text-bark/60">
-          Showing{" "}
-          <span className="font-semibold text-bark">
-            {pageItems.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1}–
-            {(currentPage - 1) * PAGE_SIZE + pageItems.length}
-          </span>{" "}
-          of <span className="font-semibold text-bark">{filtered.length}</span> cafes
-        </p>
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm text-bark/60">
+            Showing{" "}
+            <span className="font-semibold text-bark">
+              {pageItems.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1}–
+              {(currentPage - 1) * PAGE_SIZE + pageItems.length}
+            </span>{" "}
+            of <span className="font-semibold text-bark">{sorted.length}</span> cafes
+          </p>
+          <p className="flex items-center gap-1.5 text-xs font-medium text-bark/50">
+            <ArrowDownWideNarrow className="size-3.5" strokeWidth={2} />
+            Sorted by{" "}
+            <span className="font-semibold text-bark">{SORT_LABELS[sort]}</span>
+          </p>
+        </div>
+
+        {!anyReviews && sort !== "name" && sorted.length > 0 && (
+          <p className="-mt-3 mb-5 rounded-xl bg-latte/50 px-4 py-2.5 text-xs text-bark/70">
+            No reviews have been posted yet, so every cafe is currently tied — ratings and
+            review counts will reorder this list as soon as reviews come in.
+          </p>
+        )}
 
         {pageItems.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-sand bg-paper p-12 text-center animate-fade-in">
@@ -295,7 +276,7 @@ function SortDropdown({
   const current = SORTS.find((s) => s.key === value)!;
 
   return (
-    <div ref={rootRef} className="relative ml-auto">
+    <div ref={rootRef} className="relative ml-auto flex w-full sm:w-auto">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}

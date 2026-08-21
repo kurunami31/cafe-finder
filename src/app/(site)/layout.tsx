@@ -8,15 +8,18 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
     <>
       <header className="sticky top-0 z-20 border-b border-latte bg-paper/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
-          <Link href="/" className="flex shrink-0 items-center">
+          <Link href="/" className="flex shrink-0 items-center gap-2">
             <Image
-              src="/logo.jpg"
-              alt="Cafe Finder — Discover Your Perfect Spot"
-              width={480}
-              height={160}
+              src="/icon-emblem.png"
+              alt="Cafe Finder"
+              width={96}
+              height={96}
               priority
-              className="h-10 w-auto rounded-lg sm:h-11"
+              className="size-9 rounded-full object-cover sm:size-10"
             />
+            <span className="font-display text-lg font-semibold tracking-tight text-espresso">
+              Cafe Finder
+            </span>
           </Link>
           <nav className="flex items-center gap-1 text-sm font-medium text-bark sm:gap-5">
             <NavLink href="/cafes" icon={<Coffee className="size-4" strokeWidth={1.75} />}>
@@ -37,7 +40,7 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
       </header>
       <main className="flex flex-1 flex-col">{children}</main>
       <footer className="border-t border-latte bg-paper">
-        <div className="mx-auto max-w-6xl px-4 py-6 text-xs leading-relaxed text-bark/70">
+        <div className="mx-auto max-w-6xl px-4 py-6 text-center text-xs leading-relaxed text-bark/70">
           <p>
             Cafe listings &copy; OpenStreetMap contributors, available under the{" "}
             <a

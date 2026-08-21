@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDownWideNarrow,
+  Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Search,
@@ -139,24 +141,13 @@ export function HomeClient({ cafes }: { cafes: CafeWithRating[] }) {
                 {label}
               </button>
             ))}
-            <label className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-sand bg-paper px-3 py-1.5 text-xs font-semibold text-bark">
-              <ArrowDownWideNarrow className="size-3.5 text-brand-dark" strokeWidth={2} />
-              <select
-                value={sort}
-                onChange={(e) => {
-                  setSort(e.target.value as SortKey);
-                  setPage(1);
-                }}
-                aria-label="Sort cafes"
-                className="cursor-pointer bg-transparent pr-1 focus:outline-none"
-              >
-                {SORTS.map((s) => (
-                  <option key={s.key} value={s.key}>
-                    {s.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <SortDropdown
+              value={sort}
+              onChange={(next) => {
+                setSort(next);
+                setPage(1);
+              }}
+            />
           </div>
         </div>
       </div>
@@ -260,5 +251,92 @@ function PageButton({
     >
       {children}
     </button>
+  );
+}
+
+function SortDropdown({
+  value,
+  onChange,
+}: {
+  value: SortKey;
+  onChange: (next: SortKey) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  const current = SORTS.find((s) => s.key === value)!;
+
+  return (
+    <div ref={rootRef} className="relative ml-auto">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label="Sort cafes"
+        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-200 hover:-translate-y-px ${
+          open
+            ? "border-brand bg-brand/10 text-brand-dark"
+            : "border-sand bg-paper text-bark hover:border-brand"
+        }`}
+      >
+        <ArrowDownWideNarrow className="size-3.5 text-brand-dark" strokeWidth={2} />
+        <span className="hidden sm:inline">{current.label}</span>
+        <span className="sm:hidden">Sort</span>
+        <ChevronDown
+          className={`size-3.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          strokeWidth={2}
+        />
+      </button>
+
+      {open && (
+        <ul
+          role="listbox"
+          aria-label="Sort options"
+          className="absolute right-0 z-20 mt-2 w-44 animate-rise overflow-hidden rounded-[1.4rem] border border-latte bg-paper p-1 shadow-lg shadow-espresso/10"
+        >
+          {SORTS.map((s) => {
+            const selected = s.key === value;
+            return (
+              <li key={s.key} role="option" aria-selected={selected}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange(s.key);
+                    setOpen(false);
+                  }}
+                  className={`flex w-full items-center justify-between gap-2 rounded-full px-3.5 py-2 text-xs font-semibold transition-colors ${
+                    selected
+                      ? "bg-brand/10 text-brand-dark"
+                      : "text-bark hover:bg-latte hover:text-espresso"
+                  }`}
+                >
+                  {s.label}
+                  {selected && <Check className="size-3.5 shrink-0" strokeWidth={2.5} />}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
   );
 }

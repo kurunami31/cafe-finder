@@ -5,11 +5,37 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { createSupabaseServerClient, getAdminUser } from "@/lib/supabase-server";
 
-export async function sendMagicLinkAction(
-  _prev: { error?: string; sent?: boolean } | null,
+export async function signInWithPasswordAction(
+  _prev: { error?: string } | null,
   formData: FormData
-): Promise<{ error?: string; sent?: boolean }> {
+): Promise<{ error?: string }> {
   const email = String(formData.get("email") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+  if (!email || !password) {
+    return { error: "Email and password are required." };
+  }
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    switch (error.code ?? error.status) {
+      case "email_not_confirmed":
+      case 401:
+        return { error: "This email hasn't been confirmed yet. Use the magic-link option once to confirm it." };
+      case "invalid_credentials":
+        return { error: "Invalid email or password." };
+      case "over_request_rate_limit":
+      case 429:
+        return { error: "Too many attempts. Please wait a minute and try again." };
+      default:
+        return { error: `Sign-in failed: ${error.message}` };
+    }
+  }
+  redirect("/favorites");
+}
+
+export async function sendMagicLinkAction(  _prev: { error?: string; sent?: boolean } | null,
+  formData: FormData
+): Promise<{ error?: string; sent?: boolean }> {  const email = String(formData.get("email") ?? "").trim();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { error: "Please enter a valid email address." };
   }

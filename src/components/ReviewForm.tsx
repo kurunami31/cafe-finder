@@ -4,7 +4,13 @@ import { useActionState, useState } from "react";
 import { Star } from "lucide-react";
 import { submitReview, type ReviewResult } from "@/app/actions";
 
-export function ReviewForm({ cafeId }: { cafeId: string }) {
+export function ReviewForm({
+  cafeId,
+  defaultName = "",
+}: {
+  cafeId: string;
+  defaultName?: string;
+}) {
   const [state, formAction, pending] = useActionState<ReviewResult | null, FormData>(
     async (prev, formData) => submitReview(cafeId, prev, formData),
     null
@@ -59,6 +65,7 @@ export function ReviewForm({ cafeId }: { cafeId: string }) {
           id="display_name"
           name="display_name"
           type="text"
+          defaultValue={defaultName}
           maxLength={40}
           placeholder="Anonymous"
           className="w-full rounded-xl border border-sand bg-paper px-3.5 py-2.5 text-sm text-espresso placeholder:text-bark/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/25"

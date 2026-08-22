@@ -91,6 +91,15 @@ export function AccountMenu() {
         >
           <p className="truncate px-3 pb-1 pt-2 text-[11px] text-bark/60">{email}</p>
           <Link
+            href="/account"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-bark transition hover:bg-latte hover:text-espresso"
+          >
+            <UserRound className="size-4" strokeWidth={1.75} />
+            Profile settings
+          </Link>
+          <Link
             href="/favorites"
             role="menuitem"
             onClick={() => setOpen(false)}

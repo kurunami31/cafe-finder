@@ -92,7 +92,9 @@ export default async function CafePage({ params }: Props) {
   const reviews = await getReviews(id);
   const photos = await getApprovedPhotos(id);
   const reviewCount = reviews.length;
-  const viewerId = (await getAdminUser())?.id ?? null;
+  const viewer = await getAdminUser();
+  const viewerId = viewer?.id ?? null;
+  const viewerEmailMeta = (viewer?.user_metadata ?? {}) as { display_name?: string };
   const avg =
     reviewCount > 0
       ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / reviewCount) * 10) / 10
@@ -372,7 +374,12 @@ export default async function CafePage({ params }: Props) {
             <h2 className="mb-4 font-display text-xl font-semibold text-espresso">
               Write a review
             </h2>
-            <ReviewForm cafeId={cafe.id} />
+            <ReviewForm
+              cafeId={cafe.id}
+              defaultName={
+                viewerEmailMeta?.display_name ?? ""
+              }
+            />
           </section>
 
           <section className="mt-6 rounded-2xl border border-latte bg-paper p-6">

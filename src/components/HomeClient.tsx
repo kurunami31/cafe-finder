@@ -83,7 +83,7 @@ export function HomeClient({ cafes }: { cafes: CafeWithRating[] }) {
     <div ref={topRef} className="scroll-mt-20">
       <div className="sticky top-0 z-10 border-b border-latte bg-cream/90 px-4 py-4 backdrop-blur">
         <div className="mx-auto max-w-6xl">
-          <label className="relative block max-w-2xl">
+          <label className="relative mx-auto block max-w-2xl">
             <Search
               className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-bark/50"
               strokeWidth={1.75}
@@ -99,7 +99,7 @@ export function HomeClient({ cafes }: { cafes: CafeWithRating[] }) {
               className="w-full rounded-full border border-sand bg-paper py-3 pl-12 pr-4 text-sm text-espresso shadow-sm transition placeholder:text-bark/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/25"
             />
           </label>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
+          <div className="mx-auto mt-3 flex flex-wrap items-center justify-center gap-2">
             {FILTERS.map(({ key, label }) => (
               <button
                 key={key}
@@ -276,7 +276,7 @@ function SortDropdown({
   const current = SORTS.find((s) => s.key === value)!;
 
   return (
-    <div ref={rootRef} className="relative ml-auto flex w-full sm:w-auto">
+    <div ref={rootRef} className="relative flex w-full sm:w-auto">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}

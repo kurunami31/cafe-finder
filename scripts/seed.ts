@@ -46,6 +46,27 @@ async function fetchCafes(): Promise<OverpassElement[]> {
   throw new Error("All Overpass endpoints failed");
 }
 
+
+function cleanFacebook(v: string | undefined): string | null {
+  if (!v) return null;
+  const trimmed = v.trim();
+  const bare = trimmed.match(/^[A-Za-z0-9._-]+$/);
+  if (bare) return `https://www.facebook.com/${trimmed}`;
+  return /^https?:\/\//.test(trimmed) ? trimmed : null;
+}
+
+function cleanInstagram(v: string | undefined): string | null {
+  if (!v) return null;
+  let trimmed = v.trim().replace(/^@/, "");
+  const urlMatch = trimmed.match(/instagram\.com\/([A-Za-z0-9._]+)/);
+  if (urlMatch) trimmed = urlMatch[1];
+  return /^[A-Za-z0-9._]+$/.test(trimmed)
+    ? `https://www.instagram.com/${trimmed}/`
+    : /^https?:\/\//.test(trimmed)
+      ? trimmed
+      : null;
+}
+
 function bool(v: string | undefined): boolean {
   return v === "yes" || v === "true" || v === "1";
 }
@@ -89,7 +110,15 @@ async function main() {
       opening_hours: tags.opening_hours ?? null,
       website: cleanWebsite(tags.website ?? tags["contact:website"]),
       phone: tags.phone ?? tags["contact:phone"] ?? null,
+      email: tags.email ?? tags["contact:email"] ?? null,
+      facebook: cleanFacebook(
+        tags["contact:facebook"] ?? tags.facebook
+      ),
+      instagram: cleanInstagram(
+        tags["contact:instagram"] ?? tags.instagram
+      ),
       cuisine: tags.cuisine ?? null,
+      takeaway: bool(tags.takeaway),
       wifi: bool(tags.internet_access === "wlan" ? "yes" : tags.internet_access),
       outdoor_seating: bool(tags.outdoor_seating),
       aircon: bool(tags.air_conditioning),

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body style="margin: 0; padding: 0; background-color: #f4f0e8;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f0e8; padding: 24px 12px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 480px; background-color: #fffdf9; border-radius: 16px; border: 1px solid #e9e2d4; overflow: hidden;">
+
+            <!-- Header -->
+            <tr>
+              <td style="background-color: #33261a; padding: 28px 24px; text-align: center;">
+                <img src="https://findcafe.vercel.app/icon-emblem.png" alt="Cafe Finder" width="56" height="56" style="border-radius: 50%; display: inline-block;" />
+                <h1 style="margin: 12px 0 0; font-family: Georgia, 'Times New Roman', serif; font-size: 22px; color: #ffffff;">Cafe Finder</h1>
+                <p style="margin: 4px 0 0; font-size: 12px; color: #b3a28a; letter-spacing: 2px; text-transform: uppercase;">Davao City</p>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding: 32px 32px 8px; font-family: Arial, Helvetica, sans-serif;">
+                <h2 style="margin: 0 0 12px; font-size: 18px; color: #33261a;">Confirm your sign-up</h2>
+                <p style="margin: 0 0 20px; font-size: 14px; line-height: 22px; color: #5a4632;">
+                  Hi there,<br /><br />
+                  Tap the button below to confirm your email address and sign in to
+                  discover the best cafes in Davao City. No password needed.
+                </p>
+
+                <!-- Button -->
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td align="center" style="padding: 0 0 20px;">
+                      <a href="{{ .ConfirmationURL }}"
+                         style="display: inline-block; background-color: #1ba7ae; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 15px; padding: 14px 40px; border-radius: 999px;">
+                        Confirm my account
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- OTP fallback -->
+                <p style="margin: 0 0 6px; font-size: 13px; color: #5a4632;">
+                  Prefer to type a code instead? Use this one-time code on the sign-in screen:
+                </p>
+                <p style="margin: 0 0 20px; font-size: 24px; font-weight: bold; letter-spacing: 6px; color: #12858c;">{{ .Token }}</p>
+
+                <p style="margin: 0 0 8px; font-size: 12px; line-height: 18px; color: #8a7a64;">
+                  This link and code expire shortly after this email was sent.
+                  If you didn't request this, you can safely ignore this email &mdash;
+                  no account changes will be made.
+                </p>
+              </td>
+            </tr>
+
+            <!-- Divider -->
+            <tr>
+              <td style="padding: 0 32px;">
+                <hr style="border: none; border-top: 1px solid #e9e2d4; margin: 0;" />
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="padding: 20px 32px 28px; font-family: Arial, Helvetica, sans-serif; text-align: center;">
+                <p style="margin: 0; font-size: 11px; line-height: 16px; color: #8a7a64;">
+                  You are receiving this because a sign-up or sign-in was requested at
+                  <a href="{{ .SiteURL }}" style="color: #1ba7ae; text-decoration: none;">Cafe Finder Davao</a>.
+                </p>
+                <p style="margin: 8px 0 0; font-size: 11px; color: #8a7a64;">
+                  Cafe listings &copy; OpenStreetMap contributors &middot; Developed by Christopher Lyod Mercado
+                </p>
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

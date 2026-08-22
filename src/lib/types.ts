@@ -11,10 +11,14 @@ export type Cafe = {
   opening_hours: string | null;
   website: string | null;
   phone: string | null;
+  email: string | null;
+  facebook: string | null;
+  instagram: string | null;
   cuisine: string | null;
   wifi: boolean;
   outdoor_seating: boolean;
   aircon: boolean;
+  takeaway: boolean;
   hidden?: boolean;
 };
 

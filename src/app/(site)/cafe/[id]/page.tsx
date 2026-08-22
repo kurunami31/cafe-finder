@@ -7,8 +7,11 @@ import {
   Clock,
   ExternalLink,
   Globe,
+  Link2,
+  Mail,
   MapPin,
   Phone,
+  ShoppingBag,
   Snowflake,
   Sun,
   UtensilsCrossed,
@@ -254,6 +257,52 @@ export default async function CafePage({ params }: Props) {
                 </div>
               </div>
             )}
+            {cafe.facebook && (
+              <div className="flex items-start gap-3">
+                <Link2 className="mt-0.5 size-4 shrink-0 text-brand-dark" strokeWidth={1.75} />
+                <dt className="sr-only">Facebook</dt>
+                <dd>
+                  <a
+                    href={cafe.facebook}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-bark hover:text-brand-dark"
+                  >
+                    Facebook page
+                  </a>
+                </dd>
+              </div>
+            )}
+            {cafe.instagram && (
+              <div className="flex items-start gap-3">
+                <Camera className="mt-0.5 size-4 shrink-0 text-brand-dark" strokeWidth={1.75} />
+                <dt className="sr-only">Instagram</dt>
+                <dd>
+                  <a
+                    href={cafe.instagram}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-bark hover:text-brand-dark"
+                  >
+                    Instagram
+                  </a>
+                </dd>
+              </div>
+            )}
+            {cafe.email && (
+              <div className="flex items-start gap-3">
+                <Mail className="mt-0.5 size-4 shrink-0 text-brand-dark" strokeWidth={1.75} />
+                <dt className="sr-only">Email</dt>
+                <dd>
+                  <a
+                    href={`mailto:${cafe.email}`}
+                    className="text-bark hover:text-brand-dark"
+                  >
+                    {cafe.email}
+                  </a>
+                </dd>
+              </div>
+            )}
           </dl>
 
           <section className="mt-6">
@@ -268,6 +317,7 @@ export default async function CafePage({ params }: Props) {
                 Icon={Sun}
               />
               <AmenityStatus label="Air-conditioned" ok={cafe.aircon} Icon={Snowflake} />
+              <AmenityStatus label="Takeaway" ok={cafe.takeaway} Icon={ShoppingBag} />
             </div>
           </section>
 

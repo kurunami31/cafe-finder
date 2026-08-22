@@ -8,6 +8,7 @@ import {
   subscribeFavorites,
   toggleFavorite,
 } from "@/lib/favorites";
+import { toggleServerFavoriteIfSignedIn } from "@/app/login/actions";
 
 export function FavoriteButton({
   cafeId,
@@ -27,6 +28,7 @@ export function FavoriteButton({
     e.preventDefault();
     e.stopPropagation();
     toggleFavorite(cafeId);
+    void toggleServerFavoriteIfSignedIn(cafeId).catch(() => {});
   };
 
   return (

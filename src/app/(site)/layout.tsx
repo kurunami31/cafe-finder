@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Coffee, MapPin, Heart, Compass } from "lucide-react";
 import Image from "next/image";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AccountMenu } from "@/components/AccountMenu";
+import { FavoritesSync } from "@/components/FavoritesSync";
 
 export default function SiteLayout({ children }: LayoutProps<"/">) {
   return (
@@ -34,6 +36,8 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
             <NavLink href="/about" icon={<MapPin className="size-4" strokeWidth={1.75} />}>
               <span className="hidden sm:inline">About</span>
             </NavLink>
+            <AccountMenu />
+            <FavoritesSync />
             <ThemeToggle />
           </nav>
         </div>

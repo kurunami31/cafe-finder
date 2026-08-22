@@ -40,5 +40,6 @@ export type Review = {
   display_name: string;
   rating: number;
   comment: string;
+  user_id?: string | null;
   created_at: string;
 };

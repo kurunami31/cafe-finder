@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createHash, randomBytes } from "node:crypto";
 import { supabase } from "@/lib/supabase";
+import { getAdminUser } from "@/lib/supabase-server";
 
 async function getAuthorToken(): Promise<string> {
   const store = await cookies();
@@ -52,12 +53,15 @@ export async function submitReview(
     return { error: "You just posted a review. Please wait a couple of minutes." };
   }
 
+  const user = await getAdminUser();
+
   const { error } = await supabase.from("reviews").insert({
     cafe_id: cafeId,
     display_name: displayName || "Anonymous",
     rating,
     comment,
     author_token: token,
+    user_id: user?.id ?? null,
   });
 
   if (error) {

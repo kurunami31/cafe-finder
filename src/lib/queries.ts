@@ -50,7 +50,7 @@ export async function getCafe(id: string): Promise<Cafe | null> {
 export async function getReviews(cafeId: string): Promise<Review[]> {
   const { data, error } = await supabase
     .from("reviews")
-    .select("id, cafe_id, display_name, rating, comment, created_at")
+    .select("id, cafe_id, display_name, rating, comment, user_id, created_at")
     .eq("cafe_id", cafeId)
     .order("created_at", { ascending: false })
     .limit(50);

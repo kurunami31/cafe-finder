@@ -22,6 +22,8 @@ import { AmenityStatus } from "@/components/AmenityBadges";
 import { ReviewForm } from "@/components/ReviewForm";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { SuggestPhotoForm } from "@/components/SuggestPhotoForm";
+import { MyReviewDelete } from "@/components/MyReviewDelete";
+import { getAdminUser } from "@/lib/supabase-server";
 
 export const revalidate = 3600;
 
@@ -86,6 +88,7 @@ export default async function CafePage({ params }: Props) {
   const reviews = await getReviews(id);
   const photos = await getApprovedPhotos(id);
   const reviewCount = reviews.length;
+  const viewerId = (await getAdminUser())?.id ?? null;
   const avg =
     reviewCount > 0
       ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / reviewCount) * 10) / 10
@@ -276,8 +279,22 @@ export default async function CafePage({ params }: Props) {
               {reviews.map((r) => (
                 <li key={r.id} className="rounded-2xl border border-latte bg-paper p-5">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-sm font-semibold text-espresso">{r.display_name}</span>
-                    <Stars value={r.rating} className="size-3.5" />
+                    <span className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-espresso">
+                        {r.display_name}
+                      </span>
+                      {r.user_id && r.user_id === viewerId && (
+                        <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-dark">
+                          You
+                        </span>
+                      )}
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <Stars value={r.rating} className="size-3.5" />
+                      {r.user_id && r.user_id === viewerId && (
+                        <MyReviewDelete reviewId={r.id} />
+                      )}
+                    </span>
                   </div>
                   <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-bark">
                     {r.comment}

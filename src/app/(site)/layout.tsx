@@ -61,7 +61,7 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
               target="_blank"
               rel="noreferrer"
             >
-              kurunami31
+              Christopher Lyod Mercado
             </a>
           </p>
         </div>

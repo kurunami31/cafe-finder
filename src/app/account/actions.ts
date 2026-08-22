@@ -61,3 +61,50 @@ export async function updatePasswordAction(
   }
   return { saved: true };
 }
+
+export type AvatarResult = { error?: string; url?: string };
+
+export async function uploadAvatarAction(
+  _prev: AvatarResult | null,
+  formData: FormData
+): Promise<AvatarResult> {
+  const session = await requireSession();
+  if (!session) {
+    return { error: "Please sign in first." };
+  }
+  const { supabase, user } = session;
+
+  const file = formData.get("avatar");
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: "Choose an image file." };
+  }
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+    return { error: "Only JPG, PNG, or WebP images are allowed." };
+  }
+  if (file.size > 2 * 1024 * 1024) {
+    return { error: "Image must be smaller than 2 MB." };
+  }
+
+  const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+  const path = `${user.id}/avatar.${ext}`;
+  const { error: uploadError } = await supabase.storage
+    .from("profile-pictures")
+    .upload(path, file, { contentType: file.type, upsert: true });
+  if (uploadError) {
+    return { error: `Upload failed: ${uploadError.message}` };
+  }
+
+  const publicUrl = `${
+    process.env.NEXT_PUBLIC_SUPABASE_URL
+  }/storage/v1/object/public/profile-pictures/${path}?v=${Date.now()}`;
+  const { error: metaError } = await supabase.auth.updateUser({
+    data: { avatar_url: publicUrl },
+  });
+  if (metaError) {
+    return { error: "Uploaded but could not save to your profile." };
+  }
+
+  revalidatePath("/account");
+  revalidatePath("/", "layout");
+  return { url: publicUrl };
+}

@@ -11,6 +11,7 @@ export default async function AccountPage() {
 
   const metadata = (supabaseUser.user_metadata ?? {}) as {
     display_name?: string;
+    avatar_url?: string;
   };
 
   return (
@@ -25,6 +26,7 @@ export default async function AccountPage() {
         <AccountProfile
           email={supabaseUser.email ?? ""}
           initialName={metadata.display_name ?? ""}
+          avatarUrl={metadata.avatar_url ?? null}
         />
       </div>
     </div>

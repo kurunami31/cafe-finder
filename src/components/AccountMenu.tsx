@@ -2,12 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Heart, LogOut, UserRound } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { publicSignOutAction } from "@/app/login/actions";
 
 export function AccountMenu() {
   const [email, setEmail] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -17,8 +19,18 @@ export function AccountMenu() {
     supabase.auth
       .getUser()
       .then(
-        (res: { data: { user: { email: string | null } | null } }) => {
+        (
+          res: {
+            data: {
+              user: {
+                email: string | null;
+                user_metadata?: { avatar_url?: string };
+              } | null;
+            };
+          }
+        ) => {
           setEmail(res.data.user?.email ?? null);
+          setAvatarUrl(res.data.user?.user_metadata?.avatar_url ?? null);
           setChecked(true);
         },
         () => {
@@ -30,9 +42,15 @@ export function AccountMenu() {
     } = supabase.auth.onAuthStateChange(
       (
         _event: string,
-        session: { user: { email: string | null } | null } | null
+        session: {
+          user: {
+            email: string | null;
+            user_metadata?: { avatar_url?: string };
+          } | null;
+        } | null
       ) => {
         setEmail(session?.user?.email ?? null);
+        setAvatarUrl(session?.user?.user_metadata?.avatar_url ?? null);
       }
     );
     return () => sub.subscription.unsubscribe();
@@ -68,7 +86,7 @@ export function AccountMenu() {
     );
   }
 
-  const initial = email[0].toUpperCase();
+  const initial = email[0]?.toUpperCase() ?? "?";
 
   return (
     <div ref={ref} className="relative">
@@ -79,9 +97,21 @@ export function AccountMenu() {
         aria-expanded={open}
         aria-label="Account menu"
         title={email}
-        className="flex size-9 items-center justify-center rounded-full bg-brand text-sm font-bold text-white shadow-sm transition hover:-translate-y-px"
+        className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand text-sm font-bold text-white shadow-sm transition hover:-translate-y-px"
       >
-        {initial}
+        {avatarUrl ? (
+          <Image
+            key={avatarUrl}
+            src={avatarUrl}
+            alt="Your avatar"
+            fill
+            sizes="36px"
+            className="object-cover"
+            unoptimized
+          />
+        ) : (
+          initial
+        )}
       </button>
 
       {open && (

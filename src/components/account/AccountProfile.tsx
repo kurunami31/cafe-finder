@@ -6,16 +6,29 @@ import {
   updateDisplayNameAction,
   updatePasswordAction,
 } from "@/app/account/actions";
+import { AvatarUploader } from "@/components/account/AvatarUploader";
 
 export function AccountProfile({
   email,
   initialName,
+  avatarUrl,
 }: {
   email: string;
   initialName: string;
+  avatarUrl: string | null;
 }) {
   return (
     <div className="space-y-6">
+      <section className="rounded-2xl border border-latte bg-paper p-6">
+        <h2 className="font-display text-lg font-semibold text-espresso">
+          Profile picture
+        </h2>
+        <p className="mb-4 mt-1 text-xs text-bark/60">
+          Shown next to your reviews and in the account menu.
+        </p>
+        <AvatarUploader email={email} initialUrl={avatarUrl} />
+      </section>
+
       <section className="rounded-2xl border border-latte bg-paper p-6">
         <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-espresso">
           <UserRound className="size-5 text-brand-dark" strokeWidth={1.75} />

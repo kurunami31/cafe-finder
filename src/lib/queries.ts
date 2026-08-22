@@ -3,7 +3,7 @@ import type { Cafe, CafeWithRating, Review } from "@/lib/types";
 
 export async function getCafesWithRatings(): Promise<CafeWithRating[]> {
   const [cafesRes, reviewsRes] = await Promise.all([
-    supabase.from("cafes").select("*").order("name"),
+    supabase.from("cafes").select("*").eq("hidden", false).order("name"),
     supabase.from("reviews").select("cafe_id, rating"),
   ]);
 
@@ -30,7 +30,12 @@ export async function getCafesWithRatings(): Promise<CafeWithRating[]> {
 
 export async function getCafe(id: string): Promise<Cafe | null> {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
-  const { data, error } = await supabase.from("cafes").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await supabase
+    .from("cafes")
+    .select("*")
+    .eq("id", id)
+    .eq("hidden", false)
+    .maybeSingle();
   if (error) throw error;
   return (data as Cafe) ?? null;
 }

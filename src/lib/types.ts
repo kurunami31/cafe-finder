@@ -15,6 +15,7 @@ export type Cafe = {
   wifi: boolean;
   outdoor_seating: boolean;
   aircon: boolean;
+  hidden?: boolean;
 };
 
 export type CafeWithRating = Cafe & {

@@ -1,18 +1,29 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { Compass, LocateFixed, LoaderCircle } from "lucide-react";
+import { Compass, LocateFixed, LoaderCircle, ShieldAlert, RefreshCcw } from "lucide-react";
 import type { CafeWithRating } from "@/lib/types";
 import { formatAddress, isOpenNow } from "@/lib/hours";
 import { RatingSummary } from "@/components/Stars";
 
-function distanceKm(
-  lat1: number,
-  lng1: number,
-  lat2: number,
-  lng2: number
-): number {
+const emptySubscribe = (cb: () => void) => () => {
+  void cb;
+};
+
+function getInsecure(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    !window.isSecureContext &&
+    window.location.hostname !== "localhost"
+  );
+}
+
+function getInsecureServer(): boolean {
+  return false;
+}
+
+function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLng = ((lng2 - lng1) * Math.PI) / 180;
@@ -27,15 +38,40 @@ function distanceKm(
 type State =
   | { status: "idle" }
   | { status: "locating" }
-  | { status: "error"; message: string }
+  | { status: "error"; message: string; hint?: string }
   | { status: "ready"; lat: number; lng: number };
+
+function enableHint(): string {
+  const ua = navigator.userAgent || "";
+  if (/iPhone|iPad|iPod/i.test(ua)) {
+    return 'On iPhone: open Settings → Safari (or your browser app) → Location → allow "While Using". Then reload this page.';
+  }
+  if (/Android/i.test(ua)) {
+    return 'On Android: tap the lock/icon left of the address bar → Permissions → Location → Allow. Then reload this page.';
+  }
+  return "Check your browser's site settings and allow location access, then reload this page.";
+}
 
 export function NearbyClient({ allCafes }: { allCafes: CafeWithRating[] }) {
   const [state, setState] = useState<State>({ status: "idle" });
+  const insecure = useSyncExternalStore(
+    emptySubscribe,
+    getInsecure,
+    getInsecureServer
+  );
 
   const locate = () => {
     if (!("geolocation" in navigator)) {
       setState({ status: "error", message: "Your browser does not support location services." });
+      return;
+    }
+    if (!window.isSecureContext && window.location.hostname !== "localhost") {
+      setState({
+        status: "error",
+        message:
+          "Your browser blocks location on non-HTTPS pages. Open the https:// version of this site and try again.",
+        hint: enableHint(),
+      });
       return;
     }
     setState({ status: "locating" });
@@ -46,18 +82,33 @@ export function NearbyClient({ allCafes }: { allCafes: CafeWithRating[] }) {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
         }),
-      (err) => {
-        const messages: Record<number, string> = {
-          1: "Location permission was denied. Enable it in your browser settings to use this feature.",
-          2: "Your location could not be determined. Please try again.",
-          3: "Location request timed out. Please try again.",
-        };
+      async (err) => {
+        let hint: string | undefined;
+        if (err.code === err.PERMISSION_DENIED) {
+          try {
+            const perm = await navigator.permissions?.query({ name: "geolocation" as PermissionName });
+            hint =
+              perm?.state === "denied"
+                ? enableHint()
+                : "You dismissed the permission prompt. Tap the button again and choose Allow.";
+          } catch {
+            hint = enableHint();
+          }
+        } else {
+          hint = "Make sure location services are enabled on your device, then try again.";
+        }
         setState({
           status: "error",
-          message: messages[err.code] ?? "Something went wrong finding your location.",
+          message:
+            err.code === err.PERMISSION_DENIED
+              ? "Location permission was denied."
+              : err.code === err.POSITION_UNAVAILABLE
+                ? "Your location could not be determined right now."
+                : "Location request timed out.",
+          hint,
         });
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 }
     );
   };
 
@@ -82,31 +133,57 @@ export function NearbyClient({ allCafes }: { allCafes: CafeWithRating[] }) {
         Your location never leaves your device.
       </p>
 
-      {state.status !== "ready" && (
+      {insecure && state.status !== "ready" && (
+        <div className="mt-6 rounded-2xl border border-latte bg-paper p-5 animate-fade-in">
+          <p className="flex items-start gap-2 text-sm font-semibold text-red-700 dark:text-red-400">
+            <ShieldAlert className="mt-0.5 size-4 shrink-0" strokeWidth={2} />
+            Location features only work on secure (HTTPS) connections. Please open this site
+            using its https:// address.
+          </p>
+        </div>
+      )}
+
+      {!insecure && (state.status === "idle" || state.status === "error") && (
         <button
           type="button"
           onClick={locate}
-          disabled={state.status === "locating"}
-          className="mt-6 inline-flex items-center gap-2 rounded-full bg-brand px-7 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-dark disabled:pointer-events-none disabled:opacity-60 animate-rise"
+          className="mt-6 inline-flex items-center gap-2 rounded-full bg-brand px-7 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-dark animate-rise"
         >
-          {state.status === "locating" ? (
-            <LoaderCircle className="size-4 animate-spin" strokeWidth={2} />
-          ) : (
-            <LocateFixed className="size-4" strokeWidth={2} />
-          )}
-          {state.status === "locating" ? "Finding you..." : "Find cafes near me"}
+          <LocateFixed className="size-4" strokeWidth={2} />
+          Find cafes near me
         </button>
       )}
 
-      {state.status === "error" && (
-        <p className="mt-5 rounded-xl bg-red-900/5 px-4 py-3 text-sm font-medium text-red-900 dark:bg-red-400/10 dark:text-red-300">
-          {state.message}
+      {state.status === "locating" && (
+        <p className="mt-6 inline-flex items-center gap-2 rounded-full border border-sand bg-paper px-5 py-3 text-sm font-medium text-bark animate-fade-in">
+          <LoaderCircle className="size-4 animate-spin text-brand-dark" strokeWidth={2} />
+          Waiting for permission — check your screen and tap Allow...
         </p>
+      )}
+
+      {state.status === "error" && (
+        <div className="mt-6 rounded-2xl border border-latte bg-paper p-5 animate-fade-in">
+          <p className="flex items-start gap-2 text-sm font-semibold text-red-700 dark:text-red-400">
+            <ShieldAlert className="mt-0.5 size-4 shrink-0" strokeWidth={2} />
+            {state.message}
+          </p>
+          {state.hint && (
+            <p className="mt-2 pl-6 text-sm leading-relaxed text-bark/75">{state.hint}</p>
+          )}
+          <button
+            type="button"
+            onClick={locate}
+            className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-sand px-4 py-2 text-xs font-semibold text-bark transition hover:border-brand hover:text-brand-dark"
+          >
+            <RefreshCcw className="size-3.5" strokeWidth={2} />
+            Try again
+          </button>
+        </div>
       )}
 
       {state.status === "ready" && (
         <>
-          <p className="mt-8 flex items-center gap-2 text-sm font-semibold text-leaf dark:text-leaf">
+          <p className="mt-8 flex items-center gap-2 text-sm font-semibold text-leaf">
             <Compass className="size-4" strokeWidth={2} />
             Showing {nearest.length} closest cafes
           </p>

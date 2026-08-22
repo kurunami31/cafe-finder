@@ -53,6 +53,17 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
             </a>
             . Reviews by visitors of this site.
           </p>
+          <p className="mt-2">
+            Developed by{" "}
+            <a
+              href="https://kurunami31.github.io/Portfolio/"
+              className="font-semibold underline decoration-sand underline-offset-2 hover:text-brand-dark"
+              target="_blank"
+              rel="noreferrer"
+            >
+              kurunami31
+            </a>
+          </p>
         </div>
       </footer>
     </>

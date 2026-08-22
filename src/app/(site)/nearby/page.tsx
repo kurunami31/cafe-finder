@@ -1,7 +1,7 @@
 import { getCafesWithRatings } from "@/lib/queries";
 import { NearbyClient } from "@/components/NearbyClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export const metadata = { title: "Nearby" };
 

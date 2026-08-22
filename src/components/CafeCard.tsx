@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { Clock, MapPin } from "lucide-react";
 import type { CafeWithRating } from "@/lib/types";
-import { isOpenNow, formatAddress } from "@/lib/hours";
+import { isOpenNow, formatAddress, formatNextChange } from "@/lib/hours";
 import { RatingSummary } from "@/components/Stars";
 import { AmenityBadges } from "@/components/AmenityBadges";
 import { FavoriteButton } from "@/components/FavoriteButton";
 
 export function CafeCard({ cafe }: { cafe: CafeWithRating }) {
   const open = isOpenNow(cafe.opening_hours);
+  const hoursLabel = formatNextChange(cafe.opening_hours);
   return (
     <Link
       href={`/cafe/${cafe.id}`}
@@ -19,7 +20,7 @@ export function CafeCard({ cafe }: { cafe: CafeWithRating }) {
         </h3>
         <div className="flex shrink-0 items-center gap-1">
           <FavoriteButton cafeId={cafe.id} />
-          <OpenBadge open={open} />
+          <OpenBadge open={open} label={hoursLabel} />
         </div>
       </div>
       <p className="mt-1.5 flex items-start gap-1.5 text-sm text-bark/80">
@@ -36,7 +37,7 @@ export function CafeCard({ cafe }: { cafe: CafeWithRating }) {
   );
 }
 
-function OpenBadge({ open }: { open: boolean | null }) {
+function OpenBadge({ open, label }: { open: boolean | null; label: string | null }) {
   if (open === null) {
     return (
       <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-latte/60 px-2.5 py-1 text-xs font-medium text-bark/60">
@@ -45,15 +46,16 @@ function OpenBadge({ open }: { open: boolean | null }) {
       </span>
     );
   }
+  const text = label ?? (open ? "Open now" : "Closed");
   return open ? (
     <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-leaf/15 px-2.5 py-1 text-xs font-semibold text-leaf">
       <span className="size-1.5 rounded-full bg-leaf" />
-      Open now
+      {text}
     </span>
   ) : (
     <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-espresso/5 px-2.5 py-1 text-xs font-medium text-bark/50">
       <span className="size-1.5 rounded-full bg-bark/40" />
-      Closed
+      {text}
     </span>
   );
 }

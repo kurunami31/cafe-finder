@@ -1,7 +1,7 @@
 import { getCafesWithRatings } from "@/lib/queries";
 import { FavoritesClient } from "@/components/FavoritesClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export const metadata = { title: "Favorites" };
 

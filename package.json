@@ -9,7 +9,7 @@
     "lint": "eslint",
     "db:schema": "tsx scripts/apply-schema.ts",
     "db:seed": "tsx scripts/seed.ts",
-    "test": "tsx scripts/test-browse.ts"
+    "test": "tsx scripts/test-browse.ts && tsx scripts/test-hours.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

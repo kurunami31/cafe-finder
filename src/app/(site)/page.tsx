@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowRight, MapPin, Search, SlidersHorizontal, Star } from "lucide-react";
 import { getCafesWithRatings } from "@/lib/queries";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 const FEATURES = [
   {

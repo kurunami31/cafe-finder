@@ -63,3 +63,75 @@ export function formatAddress(cafe: {
 }): string {
   return [cafe.street, cafe.barangay, cafe.district].filter(Boolean).join(", ");
 }
+
+const DAY_FULL_NAMES = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
+type Session = { open: number; close: number };
+
+function buildSchedule(hours: string): Session[][] {
+  const schedule: Session[][] = Array.from({ length: 7 }, () => []);
+  for (const rule of hours.split(";")) {
+    const trimmed = rule.trim();
+    const timeMatch = trimmed.match(
+      /^(.*?)\s+(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})$/
+    );
+    if (!timeMatch) continue;
+    const days = timeMatch[1] ? parseDays(timeMatch[1]) : [0, 1, 2, 3, 4, 5, 6];
+    const open = parseTime(timeMatch[2]);
+    const close = parseTime(timeMatch[3]);
+    if (open === null || close === null) continue;
+    for (const day of days) schedule[day].push({ open, close });
+  }
+  return schedule;
+}
+
+function fmt(mins: number): string {
+  const h24 = Math.floor(mins / 60);
+  const m = mins % 60;
+  const h12 = ((h24 + 11) % 12) + 1;
+  const suffix = h24 < 12 ? "AM" : "PM";
+  return m > 0 ? `${h12}:${String(m).padStart(2, "0")} ${suffix}` : `${h12} ${suffix}`;
+}
+
+export function formatNextChange(openingHours: string | null): string | null {
+  if (!openingHours) return null;
+  if (/^24\/7$/i.test(openingHours.trim())) return "Open 24 hours";
+
+  const schedule = buildSchedule(openingHours);
+  const hasRules = schedule.some((s) => s.length > 0);
+  if (!hasRules) return null;
+
+  const { day, minutes } = davaoNow();
+
+  for (const s of schedule[day]) {
+    const overnight = s.close <= s.open;
+    if (
+      (overnight && (minutes >= s.open || minutes < s.close)) ||
+      (!overnight && minutes >= s.open && minutes < s.close)
+    ) {
+      return `Open until ${fmt(s.close)}`;
+    }
+  }
+
+  for (const s of schedule[day]) {
+    if (s.open > minutes) return `Opens ${fmt(s.open)} today`;
+  }
+
+  for (let i = 1; i <= 7; i++) {
+    const nextDay = (day + i) % 7;
+    for (const s of schedule[nextDay]) {
+      const dayLabel = i === 1 ? "tomorrow" : DAY_FULL_NAMES[nextDay];
+      return `Opens ${fmt(s.open)} ${dayLabel}`;
+    }
+  }
+
+  return null;
+}

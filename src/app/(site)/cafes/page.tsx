@@ -2,7 +2,7 @@ import { MapPin } from "lucide-react";
 import { getCafesWithRatings } from "@/lib/queries";
 import { HomeClient } from "@/components/HomeClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export const metadata = {
   title: "Browse Cafes",

@@ -14,39 +14,64 @@ import {
   Wifi,
 } from "lucide-react";
 import { getCafe, getReviews } from "@/lib/queries";
-import { formatAddress, isOpenNow } from "@/lib/hours";
+import { formatAddress, formatNextChange, isOpenNow } from "@/lib/hours";
 import MapClientWrapper from "@/components/Map";
 import { Stars } from "@/components/Stars";
 import { AmenityStatus } from "@/components/AmenityBadges";
 import { ReviewForm } from "@/components/ReviewForm";
 import { FavoriteButton } from "@/components/FavoriteButton";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 type Props = { params: Promise<{ id: string }> };
+
+function locationLabel(cafe: {
+  barangay: string | null;
+  district: string | null;
+}): string {
+  return cafe.barangay ?? cafe.district ?? "Davao City";
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   try {
     const cafe = await getCafe(id);
-    if (cafe) return { title: cafe.name };
+    if (cafe) {
+      const reviews = await getReviews(id);
+      const rating =
+        reviews.length > 0
+          ? ` Rated ${(
+              Math.round(
+                (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10
+              ) / 10
+            ).toFixed(1)}/5 by ${reviews.length} visitor${reviews.length !== 1 ? "s" : ""}.`
+          : "";
+      const description = `${cafe.name} — cafe in ${locationLabel(cafe)}, Davao City. ${formatAddress(cafe)}. Hours, amenities, map, and visitor reviews.${rating}`;
+      return {
+        title: cafe.name,
+        description,
+        openGraph: { title: `${cafe.name} | Cafe Finder Davao`, description },
+        alternates: { canonical: `/cafe/${cafe.id}` },
+      };
+    }
   } catch {}
   return { title: "Cafe" };
 }
 
 function OpenStatus({ hours }: { hours: string | null }) {
   const open = isOpenNow(hours);
-  if (open === null) {
+  const label = formatNextChange(hours);
+  if (open === null && !label) {
     return <span className="text-sm italic text-bark/50">Hours not listed</span>;
   }
+  const color = open === true ? "text-leaf" : "text-bark/60";
+  const dot = open === true ? "bg-leaf" : "bg-bark/40";
+  const text =
+    label ?? (open ? "Open now" : "Closed right now");
   return (
-    <span
-      className={`inline-flex items-center gap-2 text-sm font-semibold ${
-        open ? "text-leaf" : "text-bark/60"
-      }`}
-    >
-      <span className={`size-2 rounded-full ${open ? "bg-leaf" : "bg-bark/40"}`} />
-      {open ? "Open now" : "Closed right now"}
+    <span title={hours ?? undefined} className={`inline-flex items-center gap-2 text-sm font-semibold ${color}`}>
+      <span className={`size-2 rounded-full ${dot}`} />
+      {text}
     </span>
   );
 }
@@ -63,8 +88,41 @@ export default async function CafePage({ params }: Props) {
       ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / reviewCount) * 10) / 10
       : null;
 
+  const jsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "CafeOrCoffeeShop",
+    name: cafe.name,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: cafe.street ?? undefined,
+      addressLocality: "Davao City",
+      addressRegion: "Davao del Sur",
+      postalCode: cafe.postcode ?? undefined,
+      addressCountry: "PH",
+    },
+    geo: { "@type": "GeoCoordinates", latitude: cafe.lat, longitude: cafe.lng },
+    ...(cafe.opening_hours ? { openingHours: cafe.opening_hours } : {}),
+    ...(cafe.website ? { url: cafe.website } : {}),
+    ...(cafe.phone ? { telephone: cafe.phone } : {}),
+    ...(avg !== null && reviewCount > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: avg,
+            reviewCount,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
+  };
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Link
         href="/"
         className="inline-flex items-center gap-1.5 text-sm font-medium text-bark hover:text-brand-dark"

@@ -13,12 +13,30 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://findcafe.vercel.app"
+  ),
   title: {
     default: "Cafe Finder Davao",
     template: "%s | Cafe Finder Davao",
   },
   description:
     "Discover cafes across Davao City — search by name or neighborhood, filter by Wi-Fi, outdoor seating and more.",
+  openGraph: {
+    type: "website",
+    siteName: "Cafe Finder Davao",
+    locale: "en_PH",
+    url: "/",
+    title: "Cafe Finder Davao",
+    description:
+      "381+ real cafes across Davao City — search, filter by Wi-Fi, outdoor seating, air-conditioning, and read visitor reviews.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Cafe Finder Davao",
+    description:
+      "Discover cafes across Davao City — search, filter, and read visitor reviews.",
+  },
 };
 
 export const viewport: Viewport = {

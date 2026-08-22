@@ -27,8 +27,21 @@ export async function signInAction(
   }
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return { error: "Invalid email or password." };
-  redirect("/admin");
+  if (!error) redirect("/admin");
+
+  switch (error.code ?? error.status) {
+    case "email_not_confirmed":
+    case 401:
+      return {
+        error:
+          "This email hasn't been confirmed. In Supabase: Authentication → Users → find this user → confirm email, or re-create the user with 'Auto Confirm User' checked.",
+      };
+    case "over_request_rate_limit":
+    case 429:
+      return { error: "Too many attempts. Please wait a minute and try again." };
+    default:
+      return { error: `Sign-in failed: ${error.message}` };
+  }
 }
 
 export async function signOutAction(): Promise<void> {

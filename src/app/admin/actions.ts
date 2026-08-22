@@ -174,6 +174,46 @@ export async function listCafePhotos(
   }));
 }
 
+const SUGGESTED_FIELD_COLUMNS: Record<string, string> = {
+  opening_hours: "opening_hours",
+  website: "website",
+  phone: "phone",
+};
+
+export async function resolveSuggestionAction(formData: FormData): Promise<void> {
+  await assertAdmin();
+  const id = String(formData.get("id") ?? "");
+  const decision = String(formData.get("decision") ?? "");
+  if (!/^[0-9a-f-]{36}$/i.test(id) || !["apply", "dismiss"].includes(decision)) return;
+
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase
+    .from("edit_suggestions")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (!data || data.status !== "pending") return;
+
+  if (decision === "apply") {
+    const column = SUGGESTED_FIELD_COLUMNS[data.field];
+    if (column && data.suggested_value) {
+      await supabase
+        .from("cafes")
+        .update({ [column]: data.suggested_value })
+        .eq("id", data.cafe_id);
+    }
+    if (data.field === "closed") {
+      await supabase.from("cafes").update({ hidden: true }).eq("id", data.cafe_id);
+    }
+  }
+
+  await supabase
+    .from("edit_suggestions")
+    .update({ status: decision === "apply" ? "applied" : "dismissed" })
+    .eq("id", id);
+  revalidateAll();
+}
+
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 const ALLOWED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
 

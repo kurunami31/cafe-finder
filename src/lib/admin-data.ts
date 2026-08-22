@@ -48,6 +48,38 @@ export type AdminPhoto = {
   cafe_name: string | null;
 };
 
+export type EditSuggestion = {
+  id: string;
+  cafe_id: string;
+  field: string;
+  suggested_value: string | null;
+  note: string;
+  status: string;
+  created_at: string;
+  cafe_name: string | null;
+};
+
+export async function getPendingSuggestions(): Promise<EditSuggestion[]> {
+  await requireAdmin();
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("edit_suggestions")
+    .select("*, cafes(name)")
+    .eq("status", "pending")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map((s) => ({
+    id: s.id,
+    cafe_id: s.cafe_id,
+    field: s.field,
+    suggested_value: s.suggested_value,
+    note: s.note,
+    status: s.status,
+    created_at: s.created_at,
+    cafe_name: (s.cafes as unknown as { name: string } | null)?.name ?? null,
+  }));
+}
+
 export async function getPhotosByStatus(
   approved: boolean
 ): Promise<AdminPhoto[]> {

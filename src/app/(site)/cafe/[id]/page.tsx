@@ -11,6 +11,7 @@ import {
   Link2,
   Mail,
   MapPin,
+  Pencil,
   Phone,
   ShoppingBag,
   Snowflake,
@@ -26,6 +27,8 @@ import { AmenityStatus } from "@/components/AmenityBadges";
 import { ReviewForm } from "@/components/ReviewForm";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { SuggestPhotoForm } from "@/components/SuggestPhotoForm";
+import { SuggestEditForm } from "@/components/SuggestEditForm";
+import { ShareButton } from "@/components/ShareButton";
 import { MyReviewDelete } from "@/components/MyReviewDelete";
 import { getAdminUser } from "@/lib/supabase-server";
 
@@ -148,6 +151,7 @@ export default async function CafePage({ params }: Props) {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex items-start gap-3">
               <FavoriteButton cafeId={cafe.id} size="lg" />
+              <ShareButton name={cafe.name} />
               <div>
                 <h1 className="font-display text-3xl font-semibold tracking-tight text-espresso sm:text-4xl">
                   {cafe.name}
@@ -387,6 +391,14 @@ export default async function CafePage({ params }: Props) {
             <p className="mt-3 text-xs text-bark/50">
               Submissions are reviewed by a moderator before appearing publicly.
             </p>
+          </section>
+
+          <section className="mt-6 rounded-2xl border border-latte bg-paper p-6">
+            <h2 className="mb-4 flex items-center gap-2 font-display text-xl font-semibold text-espresso">
+              <Pencil className="size-5 text-brand-dark" strokeWidth={1.75} />
+              Spotted something wrong?
+            </h2>
+            <SuggestEditForm cafeId={cafe.id} />
           </section>
         </div>
 

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createHash, randomBytes } from "node:crypto";
 import { supabase } from "@/lib/supabase";
 import { getAdminUser } from "@/lib/supabase-server";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 async function getAuthorToken(): Promise<string> {
   const store = await cookies();
@@ -26,6 +27,9 @@ export async function submitReview(
   _prev: ReviewResult | null,
   formData: FormData
 ): Promise<ReviewResult> {
+  if (!(await checkRateLimit("review", 5, 10 * 60 * 1000))) {
+    return { error: "Too many reviews submitted from this network. Please try again later." };
+  }
   const displayName = String(formData.get("display_name") ?? "").trim();
   const rating = Number(formData.get("rating"));
   const comment = String(formData.get("comment") ?? "").trim();
@@ -75,6 +79,59 @@ export async function submitReview(
 
 export type PhotoResult = { error?: string };
 
+export type EditSuggestionResult = { error?: string; sent?: boolean };
+
+export async function submitEditSuggestion(
+  cafeId: string,
+  _prev: EditSuggestionResult | null,
+  formData: FormData
+): Promise<EditSuggestionResult> {
+  if (!(await checkRateLimit("suggestion", 5, 60 * 60 * 1000))) {
+    return { error: "Too many suggestions from this network. Please try again later." };
+  }
+  if (!/^[0-9a-f-]{36}$/i.test(cafeId)) {
+    return { error: "Invalid cafe." };
+  }
+
+  const field = String(formData.get("field") ?? "");
+  const allowedFields = ["opening_hours", "website", "phone", "closed", "address", "other"];
+  if (!allowedFields.includes(field)) {
+    return { error: "Choose what needs fixing." };
+  }
+  const suggestedValue =
+    field === "closed" ? "" : String(formData.get("suggested_value") ?? "").trim();
+  if (field !== "closed" && suggestedValue.length === 0) {
+    return { error: "Please enter the correct information." };
+  }
+  const note = String(formData.get("note") ?? "").trim();
+  if (note.length < 5 || note.length > 500) {
+    return { error: "Tell us a bit more (5-500 characters)." };
+  }
+
+  const token = await getAuthorToken();
+  const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+  const { count } = await supabase
+    .from("edit_suggestions")
+    .select("id", { count: "exact", head: true })
+    .eq("author_token", token)
+    .gte("created_at", dayAgo);
+  if ((count ?? 0) >= 5) {
+    return { error: "You have submitted several suggestions today. Please try again tomorrow." };
+  }
+
+  const { error } = await supabase.from("edit_suggestions").insert({
+    cafe_id: cafeId,
+    field,
+    suggested_value: suggestedValue || null,
+    note,
+    author_token: token,
+  });
+  if (error) return { error: "Could not submit your suggestion. Please try again." };
+
+  return { sent: true };
+}
+
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 const ALLOWED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
@@ -94,6 +151,9 @@ export async function submitPhoto(
   _prev: PhotoResult | null,
   formData: FormData
 ): Promise<PhotoResult> {
+  if (!(await checkRateLimit("photo", 10, 60 * 60 * 1000))) {
+    return { error: "Too many uploads from this network. Please try again later." };
+  }
   if (!/^[0-9a-f-]{36}$/i.test(cafeId)) {
     return { error: "Invalid cafe." };
   }

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Coffee, Store, MessageSquareText, LogOut } from "lucide-react";
+import { Coffee, ImagePlus, MessageSquareText, Store, LogOut } from "lucide-react";
 import { requireAdmin } from "@/lib/admin-data";
 import { signOutAction } from "@/app/admin/actions";
 
@@ -28,6 +28,9 @@ export default async function AdminPanelLayout({
             </AdminTab>
             <AdminTab href="/admin/cafes" icon={<Store className="size-4" strokeWidth={1.75} />}>
               Cafes
+            </AdminTab>
+            <AdminTab href="/admin/approvals" icon={<ImagePlus className="size-4" strokeWidth={1.75} />}>
+              Approvals
             </AdminTab>
             <form action={signOutAction}>
               <button

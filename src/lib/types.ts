@@ -18,9 +18,20 @@ export type Cafe = {
   hidden?: boolean;
 };
 
+export type CafePhoto = {
+  id: string;
+  cafe_id: string;
+  storage_path: string;
+  approved: boolean;
+  uploaded_by: string;
+  created_at: string;
+};
+
 export type CafeWithRating = Cafe & {
   rating_avg: number | null;
   review_count: number;
+  cover_url?: string | null;
+  photo_count?: number;
 };
 
 export type Review = {

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import type { Cafe } from "@/lib/types";
 import { setHiddenAction, updateCafeAction } from "@/app/admin/actions";
+import { PhotoManager } from "@/components/admin/PhotoManager";
 
 type AdminCafe = Cafe;
 
@@ -197,7 +198,8 @@ function CafeRow({
       </div>
 
       {open && (
-        <form action={save} className="border-t border-latte p-5 pt-4">
+        <>
+          <form action={save} className="border-t border-latte p-5 pt-4">
           <input type="hidden" name="id" value={cafe.id} />
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Name *" name="name" defaultValue={cafe.name} required />
@@ -243,6 +245,8 @@ function CafeRow({
             </button>
           </div>
         </form>
+        <PhotoManager cafe={cafe} />
+        </>
       )}
     </li>
   );

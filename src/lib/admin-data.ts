@@ -37,3 +37,35 @@ export async function getAdminCafes(): Promise<Cafe[]> {
   if (error) throw error;
   return (data as Cafe[]) ?? [];
 }
+
+export type AdminPhoto = {
+  id: string;
+  cafe_id: string;
+  storage_path: string;
+  approved: boolean;
+  uploaded_by: string;
+  created_at: string;
+  cafe_name: string | null;
+};
+
+export async function getPhotosByStatus(
+  approved: boolean
+): Promise<AdminPhoto[]> {
+  await requireAdmin();
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("cafe_photos")
+    .select("*, cafes(name)")
+    .eq("approved", approved)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map((p) => ({
+    id: p.id,
+    cafe_id: p.cafe_id,
+    storage_path: p.storage_path,
+    approved: p.approved,
+    uploaded_by: p.uploaded_by,
+    created_at: p.created_at,
+    cafe_name: (p.cafes as unknown as { name: string } | null)?.name ?? null,
+  }));
+}

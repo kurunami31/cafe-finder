@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { randomBytes } from "node:crypto";
 import { createSupabaseServerClient, getAdminUser } from "@/lib/supabase-server";
 
 async function assertAdmin() {
@@ -147,5 +148,135 @@ export async function setHiddenAction(formData: FormData): Promise<void> {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return;
   const supabase = await createSupabaseServerClient();
   await supabase.from("cafes").update({ hidden }).eq("id", id);
+  revalidateAll();
+}
+
+export async function listCafePhotos(
+  cafeId: string
+): Promise<{ id: string; url: string; approved: boolean }[]> {
+  try {
+    await assertAdmin();
+  } catch {
+    return [];
+  }
+  if (!/^[0-9a-f-]{36}$/i.test(cafeId)) return [];
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("cafe_photos")
+    .select("id, storage_path, approved")
+    .eq("cafe_id", cafeId)
+    .order("created_at", { ascending: true });
+  if (error || !data) return [];
+  return data.map((p) => ({
+    id: p.id,
+    url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/cafe-photos/${p.storage_path}`,
+    approved: p.approved,
+  }));
+}
+
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+const ALLOWED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+function extensionFor(type: string): string {
+  switch (type) {
+    case "image/png":
+      return "png";
+    case "image/webp":
+      return "webp";
+    default:
+      return "jpg";
+  }
+}
+
+export async function uploadCafePhotoAction(
+  _prev: { error?: string } | null,
+  formData: FormData
+): Promise<{ error?: string }> {
+  try {
+    await assertAdmin();
+  } catch {
+    return { error: "Session expired. Please log in again." };
+  }
+  const cafeId = String(formData.get("cafe_id") ?? "");
+  if (!/^[0-9a-f-]{36}$/i.test(cafeId)) return { error: "Invalid cafe id." };
+
+  const file = formData.get("photo");
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: "Choose an image file." };
+  }
+  if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
+    return { error: "Only JPG, PNG, or WebP images are allowed." };
+  }
+  if (file.size > MAX_PHOTO_BYTES) {
+    return { error: "Photo must be smaller than 5 MB." };
+  }
+
+  const ext = extensionFor(file.type);
+  const path = `approved/${cafeId}/${randomBytes(12).toString("hex")}.${ext}`;
+  const supabase = await createSupabaseServerClient();
+  const { error: uploadError } = await supabase.storage
+    .from("cafe-photos")
+    .upload(path, file, { contentType: file.type });
+  if (uploadError) return { error: `Upload failed: ${uploadError.message}` };
+
+  const user = await getAdminUser();
+  const { error: insertError } = await supabase.from("cafe_photos").insert({
+    cafe_id: cafeId,
+    storage_path: path,
+    approved: true,
+    uploaded_by: user?.email ?? "admin",
+  });
+  if (insertError) {
+    await supabase.storage.from("cafe-photos").remove([path]);
+    return { error: "Could not save the photo record." };
+  }
+
+  revalidateAll();
+  revalidatePath(`/cafe/${cafeId}`);
+  return {};
+}
+
+export async function deletePhotoAction(formData: FormData): Promise<void> {
+  await assertAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return;
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase
+    .from("cafe_photos")
+    .select("storage_path")
+    .eq("id", id)
+    .maybeSingle();
+  if (!data) return;
+  await supabase.storage.from("cafe-photos").remove([data.storage_path]);
+  await supabase.from("cafe_photos").delete().eq("id", id);
+  revalidateAll();
+}
+
+export async function setPhotoApprovalAction(formData: FormData): Promise<void> {
+  await assertAdmin();
+  const id = String(formData.get("id") ?? "");
+  const approved = String(formData.get("approved")) === "true";
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return;
+  const supabase = await createSupabaseServerClient();
+  if (approved) {
+    const { data } = await supabase
+      .from("cafe_photos")
+      .select("storage_path")
+      .eq("id", id)
+      .maybeSingle();
+    if (data && data.storage_path.startsWith("pending/")) {
+      const newPath = data.storage_path.replace(/^pending\//, "approved/");
+      const { error: moveError } = await supabase.storage
+        .from("cafe-photos")
+        .move(data.storage_path, newPath);
+      if (!moveError) {
+        await supabase
+          .from("cafe_photos")
+          .update({ storage_path: newPath })
+          .eq("id", id);
+      }
+    }
+  }
+  await supabase.from("cafe_photos").update({ approved }).eq("id", id);
   revalidateAll();
 }

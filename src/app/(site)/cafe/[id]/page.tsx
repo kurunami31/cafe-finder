@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -13,13 +14,14 @@ import {
   UtensilsCrossed,
   Wifi,
 } from "lucide-react";
-import { getCafe, getReviews } from "@/lib/queries";
+import { getCafe, getApprovedPhotos, getReviews } from "@/lib/queries";
 import { formatAddress, formatNextChange, isOpenNow } from "@/lib/hours";
 import MapClientWrapper from "@/components/Map";
 import { Stars } from "@/components/Stars";
 import { AmenityStatus } from "@/components/AmenityBadges";
 import { ReviewForm } from "@/components/ReviewForm";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { SuggestPhotoForm } from "@/components/SuggestPhotoForm";
 
 export const revalidate = 3600;
 
@@ -37,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const cafe = await getCafe(id);
     if (cafe) {
-      const reviews = await getReviews(id);
+    const reviews = await getReviews(id);
       const rating =
         reviews.length > 0
           ? ` Rated ${(
@@ -82,6 +84,7 @@ export default async function CafePage({ params }: Props) {
   if (!cafe) notFound();
 
   const reviews = await getReviews(id);
+  const photos = await getApprovedPhotos(id);
   const reviewCount = reviews.length;
   const avg =
     reviewCount > 0
@@ -160,6 +163,35 @@ export default async function CafePage({ params }: Props) {
               <span className="text-sm text-bark/60">
                 · {reviewCount} review{reviewCount !== 1 ? "s" : ""}
               </span>
+            </div>
+          )}
+
+          {photos.length > 0 && (
+            <div className="mt-6 animate-fade-in">
+              <Image
+                src={photos[0]}
+                alt={`Photo of ${cafe.name}`}
+                width={1200}
+                height={675}
+                priority
+                sizes="(max-width: 1024px) 100vw, 800px"
+                className="h-60 w-full rounded-2xl border border-latte object-cover shadow-sm sm:h-96"
+              />
+              {photos.length > 1 && (
+                <div className="mt-2 grid grid-cols-4 gap-2 sm:grid-cols-6">
+                  {photos.slice(1, 7).map((url, i) => (
+                    <Image
+                      key={url}
+                      src={url}
+                      alt={`${cafe.name} photo ${i + 2}`}
+                      width={320}
+                      height={240}
+                      sizes="160px"
+                      className="h-20 w-full rounded-xl border border-latte object-cover"
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -273,6 +305,13 @@ export default async function CafePage({ params }: Props) {
               Write a review
             </h2>
             <ReviewForm cafeId={cafe.id} />
+          </section>
+
+          <section className="mt-6 rounded-2xl border border-latte bg-paper p-6">
+            <SuggestPhotoForm cafeId={cafe.id} />
+            <p className="mt-3 text-xs text-bark/50">
+              Submissions are reviewed by a moderator before appearing publicly.
+            </p>
           </section>
         </div>
 

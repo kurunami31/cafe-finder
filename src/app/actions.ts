@@ -68,3 +68,77 @@ export async function submitReview(
   revalidatePath("/");
   return {};
 }
+
+export type PhotoResult = { error?: string };
+
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+const ALLOWED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+function extensionFor(type: string): string {
+  switch (type) {
+    case "image/png":
+      return "png";
+    case "image/webp":
+      return "webp";
+    default:
+      return "jpg";
+  }
+}
+
+export async function submitPhoto(
+  cafeId: string,
+  _prev: PhotoResult | null,
+  formData: FormData
+): Promise<PhotoResult> {
+  if (!/^[0-9a-f-]{36}$/i.test(cafeId)) {
+    return { error: "Invalid cafe." };
+  }
+
+  const file = formData.get("photo");
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: "Please choose a photo to upload." };
+  }
+  if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
+    return { error: "Only JPG, PNG, or WebP images are allowed." };
+  }
+  if (file.size > MAX_PHOTO_BYTES) {
+    return { error: "Photo must be smaller than 5 MB." };
+  }
+
+  const token = await getAuthorToken();
+  const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+  const { count } = await supabase
+    .from("cafe_photos")
+    .select("id", { count: "exact", head: true })
+    .eq("author_token", token)
+    .gte("created_at", dayAgo);
+  if ((count ?? 0) >= 3) {
+    return {
+      error: "You have already suggested 3 photos today. Please try again tomorrow.",
+    };
+  }
+
+  const ext = extensionFor(file.type);
+  const path = `pending/${cafeId}/${randomBytes(12).toString("hex")}.${ext}`;
+  const { error: uploadError } = await supabase.storage
+    .from("cafe-photos")
+    .upload(path, file, { contentType: file.type });
+  if (uploadError) {
+    return { error: "Upload failed. Please try again." };
+  }
+
+  const { error: insertError } = await supabase.from("cafe_photos").insert({
+    cafe_id: cafeId,
+    storage_path: path,
+    approved: false,
+    uploaded_by: "visitor",
+    author_token: token,
+  });
+  if (insertError) {
+    await supabase.storage.from("cafe-photos").remove([path]);
+    return { error: "Could not save your submission. Please try again." };
+  }
+
+  return {};
+}

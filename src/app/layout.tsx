@@ -37,6 +37,9 @@ export const metadata: Metadata = {
     description:
       "Discover cafes across Davao City — search, filter, and read visitor reviews.",
   },
+  verification: {
+    google: "YJcsh9_nRVIxsfYAS7PkB3qe-_mmtaQ4w3PoxibWFgk",
+  },
 };
 
 export const viewport: Viewport = {
